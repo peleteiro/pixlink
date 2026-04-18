@@ -1,0 +1,149 @@
+---
+import PixForm from "../components/PixForm";
+import "../styles/global.css";
+---
+
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>PIX QR Code Generator — pix.peleteiro.net</title>
+  </head>
+
+  <body
+    class="flex min-h-dvh items-center justify-center bg-gray-100 p-6 font-sans text-gray-900 antialiased"
+  >
+    <div class="w-full max-w-lg">
+      <div class="overflow-hidden rounded-2xl bg-white shadow-lg">
+        <!-- Header -->
+        <div
+          class="bg-gradient-to-br from-emerald-500 to-teal-400 px-8 py-7 text-center"
+        >
+          <h1 class="text-2xl font-bold tracking-tight text-white">
+            PIX QR Code
+          </h1>
+          <p class="mt-2 text-sm text-white/80">
+            Gere um link que exibe um QR Code de pagamento PIX
+          </p>
+        </div>
+
+        <!-- Form -->
+        <div class="p-8">
+          <PixForm client:load />
+        </div>
+      </div>
+
+      <!-- Documentacao -->
+      <div class="mt-6 rounded-2xl bg-white p-8 shadow-lg">
+        <h2 class="mb-4 text-lg font-bold text-gray-900">
+          Formato da URL
+        </h2>
+
+        <div class="rounded-lg bg-gray-50 px-4 py-3">
+          <code class="text-sm text-emerald-700">
+            /{"{chave-pix}"}/{"{valor-centavos}"}?d={"{descricao}"}
+          </code>
+        </div>
+
+        <!-- Parametros -->
+        <div class="mt-6 flex flex-col gap-4">
+          <div>
+            <h3 class="text-sm font-semibold text-gray-900">chave-pix</h3>
+            <p class="mt-1 text-sm leading-relaxed text-gray-500">
+              A chave PIX do recebedor. Aceita:
+            </p>
+            <ul class="mt-2 flex flex-col gap-1.5 pl-4">
+              <li class="text-sm text-gray-500">
+                <strong class="font-medium text-gray-700">Telefone</strong> —
+                <code class="text-xs text-emerald-700">21992446550</code>,
+                <code class="text-xs text-emerald-700">5521992446550</code> ou
+                <code class="text-xs text-emerald-700">+5521992446550</code>
+              </li>
+              <li class="text-sm text-gray-500">
+                <strong class="font-medium text-gray-700">CPF</strong> —
+                <code class="text-xs text-emerald-700">052.868.827-81</code> ou
+                <code class="text-xs text-emerald-700">05286882781</code>
+              </li>
+              <li class="text-sm text-gray-500">
+                <strong class="font-medium text-gray-700">E-mail</strong> —
+                <code class="text-xs text-emerald-700">jose@peleteiro.net</code>
+              </li>
+            </ul>
+          </div>
+
+          <div class="h-px bg-gray-100"></div>
+
+          <div>
+            <h3 class="text-sm font-semibold text-gray-900">
+              valor-centavos
+            </h3>
+            <p class="mt-1 text-sm leading-relaxed text-gray-500">
+              Valor em centavos. Ex:
+              <code class="text-xs text-emerald-700">5000</code> = R$ 50,00
+            </p>
+          </div>
+
+          <div class="h-px bg-gray-100"></div>
+
+          <div>
+            <h3 class="text-sm font-semibold text-gray-900">
+              ?d= <span class="font-normal text-gray-400">(opcional)</span>
+            </h3>
+            <p class="mt-1 text-sm leading-relaxed text-gray-500">
+              Descricao do pagamento, incluida no payload PIX.
+            </p>
+          </div>
+
+          <div class="h-px bg-gray-100"></div>
+
+          <div>
+            <h3 class="text-sm font-semibold text-gray-900">
+              .png <span class="font-normal text-gray-400">(formato)</span>
+            </h3>
+            <p class="mt-1 text-sm leading-relaxed text-gray-500">
+              Adicione <code class="text-xs text-emerald-700">.png</code> ao
+              final do valor para receber apenas a imagem do QR Code em PNG
+              (512x512). Util para embedar em e-mails, mensagens ou documentos.
+            </p>
+          </div>
+        </div>
+
+        <!-- Exemplos -->
+        <h3 class="mt-6 mb-3 text-sm font-semibold text-gray-900">
+          Exemplos
+        </h3>
+        <div class="flex flex-col gap-2">
+          <a
+            href="/21992446550/5000"
+            class="block rounded-lg bg-gray-50 px-4 py-2.5 text-sm text-emerald-700 transition-colors hover:bg-emerald-50"
+          >
+            /21992446550/5000
+          </a>
+          <a
+            href="/052.868.827-81/1500"
+            class="block rounded-lg bg-gray-50 px-4 py-2.5 text-sm text-emerald-700 transition-colors hover:bg-emerald-50"
+          >
+            /052.868.827-81/1500
+          </a>
+          <a
+            href="/jose@peleteiro.net/10000?d=Consultoria"
+            class="block rounded-lg bg-gray-50 px-4 py-2.5 text-sm text-emerald-700 transition-colors hover:bg-emerald-50"
+          >
+            /jose@peleteiro.net/10000?d=Consultoria
+          </a>
+          <a
+            href="/21992446550/5000.png"
+            class="block rounded-lg bg-gray-50 px-4 py-2.5 text-sm text-emerald-700 transition-colors hover:bg-emerald-50"
+          >
+            /21992446550/5000.png
+          </a>
+        </div>
+      </div>
+
+      <!-- Footer -->
+      <div class="mt-6 text-center text-xs text-gray-300">
+        pix.peleteiro.net
+      </div>
+    </div>
+  </body>
+</html>

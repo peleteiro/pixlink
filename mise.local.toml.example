@@ -1,0 +1,15 @@
+# Configurações locais (sobrescrevem .mise.toml)
+# Copie para mise.local.toml e preencha suas credenciais
+# Este arquivo NÃO é commitado (.gitignore)
+
+[env]
+# AWS (backend S3 do tofu)
+AWS_DEFAULT_REGION    = "us-east-2"
+AWS_REGION            = "us-east-2"
+AWS_ACCESS_KEY_ID     = "..."
+AWS_SECRET_ACCESS_KEY = "..."
+
+# Cloudflare
+CLOUDFLARE_ACCOUNT_ID="..."
+CLOUDFLARE_API_TOKEN="..."
+CLOUDFLARE_API_TOKEN_ID="..."

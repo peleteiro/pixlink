@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+#MISE description="Atualiza dependências JavaScript"
+#MISE dir="{{config_root}}"
+
+set -euo pipefail
+
+pnpm dlx npm-check-updates@latest --upgrade
+pnpm dedupe
+pnpm install
+pnpm approve-builds --all

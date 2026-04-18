@@ -1,0 +1,13 @@
+name = "pix"
+compatibility_date = "2025-04-14"
+compatibility_flags = [ "nodejs_compat" ]
+workers_dev = false
+preview_urls = false
+
+[assets]
+binding = "ASSETS"
+directory = "./dist"
+
+[observability.logs]
+enabled = true
+invocation_logs = true

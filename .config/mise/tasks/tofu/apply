@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+#MISE description="Aplica mudanças na infraestrutura"
+#MISE dir="{{config_root}}"
+
+set -euo pipefail
+
+echo "==> Executando tofu apply..."
+cd sysadmin/tofu
+tofu apply
+cd -
+
+echo "Apply completo!"

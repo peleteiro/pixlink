@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+#MISE description="Executa verificacao completa sem fix (CI)"
+#MISE dir="{{config_root}}"
+
+set -euo pipefail
+
+echo "Executando verificacao completa (CI)..."
+
+pnpm prettier --check .
+pnpm astro check --minimum-severity warning
+
+echo "Verificacao completa!"

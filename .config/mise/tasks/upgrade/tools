@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+#MISE description="Atualiza ferramentas do mise"
+#MISE dir="{{config_root}}"
+
+set -euo pipefail
+
+mise upgrade -y

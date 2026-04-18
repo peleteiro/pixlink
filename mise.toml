@@ -1,0 +1,17 @@
+[env]
+_.path = [
+  '{{ config_root }}/.config/bin',
+  '{{ config_root }}/node_modules/.bin',
+  '~/.antigravity/antigravity/bin',
+]
+
+NODE_ENV = 'development'
+
+[tools]
+node = "22"
+pnpm = "10"
+opentofu = "1"
+claude = "latest"
+
+[task_config]
+dir = ".config/mise/tasks"
