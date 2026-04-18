@@ -1,4 +1,4 @@
-# pix
+# pixlink
 
 Cloudflare Worker que gera QR Codes de pagamento PIX a partir da URL.
 

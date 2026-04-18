@@ -1,4 +1,4 @@
-name = "pix"
+name = "pixlink"
 compatibility_date = "2025-04-14"
 compatibility_flags = [ "nodejs_compat" ]
 workers_dev = false

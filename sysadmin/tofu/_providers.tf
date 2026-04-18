@@ -3,7 +3,7 @@ terraform {
 
   backend "s3" {
     bucket       = "bbox-terraform"
-    key          = "peleteiro/pix/tofu.tfstate"
+    key          = "peleteiro/pixlink/tofu.tfstate"
     region       = "us-east-2"
     use_lockfile = true
   }

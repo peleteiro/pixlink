@@ -1,4 +1,4 @@
-# Guia de Agentes — pix
+# Guia de Agentes — pixlink
 
 Fonte unica da verdade para agentes de IA trabalhando neste projeto.
 
@@ -19,7 +19,7 @@ Fonte unica da verdade para agentes de IA trabalhando neste projeto.
 
 ## Contexto e Arquitetura
 
-**pix** e um Cloudflare Worker que gera QR Codes de pagamento PIX a partir da URL.
+**pixlink** e um Cloudflare Worker que gera QR Codes de pagamento PIX a partir da URL.
 
 URL: `/{chave-pix}/{valor-em-centavos}`
 Exemplo: `/21992446550/5000` → QR Code PIX de R$50,00 para +55 21 99244-6550
