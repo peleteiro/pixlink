@@ -1,5 +1,9 @@
 import { useState } from "react";
-import { MAX_CENTAVOS, centavosParaUrl, parsearChave } from "@/lib/pix";
+// Imports diretos dos submodulos (nao do barrel @/lib/pix) pra evitar
+// puxar qrcode-svg no bundle client — ele tem require("fs") no .save()
+// que nunca usamos, mas gera warning do Vite.
+import { parsearChave } from "@/lib/pix/chave";
+import { MAX_CENTAVOS, centavosParaUrl } from "@/lib/pix/valor";
 
 export type ErroForm = "chave-vazia" | "chave-invalida" | "valor-invalido";
 
