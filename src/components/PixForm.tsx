@@ -13,9 +13,10 @@ export type ErroForm = "chave-vazia" | "chave-invalida" | "valor-invalido";
  *
  * No valor, so digitos e virgula importam: a virgula separa os centavos
  * e qualquer outro caractere ("R$", ".", "$", espacos, etc.) e ignorado.
- * Como conveniencia, se o valor terminar com ".XX" (ponto + dois digitos)
- * tratamos esse ponto como virgula — comum ao colar valores formatados
- * em ingles. Valores negativos viram positivos (o "-" e ignorado).
+ * Como conveniencia, se o valor terminar com "." + 1 ou 2 digitos (ex:
+ * "50.5", "50.00") tratamos esse ponto como virgula — comum ao colar
+ * valores formatados em ingles. Valores negativos viram positivos (o "-"
+ * e ignorado).
  */
 export function construirUrl(
   chave: string,
@@ -25,7 +26,7 @@ export function construirUrl(
   if (!chave.trim()) return { erro: "chave-vazia" };
   if (!parsearChave(chave)) return { erro: "chave-invalida" };
 
-  const normalizado = valor.replace(/\.(\d{2})$/, ",$1");
+  const normalizado = valor.replace(/\.(\d{1,2})$/, ",$1");
   const limpo = normalizado.replace(/[^\d,]/g, "").replace(",", ".");
   const centavos = Math.round(parseFloat(limpo) * 100);
   if (isNaN(centavos) || centavos <= 0 || centavos > MAX_CENTAVOS)

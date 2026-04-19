@@ -57,16 +57,17 @@ com dois digitos:
 | `/0,01`        | 1        | R$ 0,01      |
 | `/50000,00`    | 5000000  | R$ 50.000,00 |
 
-**Heuristica:** se o valor terminar com `.` + dois digitos (ex: `50.00`),
-tratamos esse ponto como virgula — conveniencia para quem cola valores
-em formato em ingles. `/50.00` equivale a `/50,00`.
+**Heuristica:** se o valor terminar com `.` + 1 ou 2 digitos (ex:
+`50.00`, `50.5`), tratamos esse ponto como virgula — conveniencia para
+quem cola valores em formato em ingles. `/50.00` equivale a `/50,00` e
+`/50.5` equivale a `/50,50`.
 
 Invalidos (retornam HTTP 400 com pagina estilizada):
 
 - Zero ou negativo (`/0`, `/0,00`, `/-50`)
-- Caracteres nao numericos alem de `,` ou do `.XX` final (`/R$50`,
+- Caracteres nao numericos alem de `,` ou do ponto final (`/R$50`,
   `/50abc`)
-- Ponto no meio que nao seja o `.XX` final (`/50.000`, `/50.5`)
+- Ponto no meio que nao seja o final com 1-2 digitos (`/50.000`)
 - Valor acima de `Number.MAX_SAFE_INTEGER` centavos (~R$ 90 trilhoes) —
   acima disso o parseFloat perde precisao.
 
@@ -94,8 +95,8 @@ Detalhes:
   inteiros.
 - Tudo que nao for digito ou `,` e removido (inclusive `-`, entao
   valores negativos viram positivos).
-- Como na URL, `.` no final seguido de dois digitos vira `,` (`50.00`
-  = `50,00`).
+- Como na URL, `.` no final seguido de 1 ou 2 digitos vira `,` (`50.00`
+  = `50,00`, `50.5` = `50,50`).
 - Fracoes menores que 1 centavo sao arredondadas para o inteiro mais
   proximo (`0,015` → 2 centavos).
 

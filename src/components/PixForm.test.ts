@@ -98,6 +98,12 @@ describe("construirUrl", () => {
       });
     });
 
+    it("trata ponto final seguido de 1 digito como virgula", () => {
+      expect(construirUrl("21992446550", "50.5")).toEqual({
+        url: "/21992446550/50,50",
+      });
+    });
+
     it("trata ponto final seguido de 2 digitos como virgula com prefixo R$", () => {
       expect(construirUrl("21992446550", "R$ 50.00")).toEqual({
         url: "/21992446550/50,00",

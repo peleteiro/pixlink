@@ -175,9 +175,11 @@ describe("parseValorUrl", () => {
     expect(parseValorUrl("0,50")).toBe(50);
   });
 
-  it("trata ponto final com 2 digitos como virgula", () => {
+  it("trata ponto final com 1 ou 2 digitos como virgula", () => {
     expect(parseValorUrl("50.00")).toBe(5000);
     expect(parseValorUrl("1234.56")).toBe(123456);
+    expect(parseValorUrl("50.5")).toBe(5050);
+    expect(parseValorUrl("50.0")).toBe(5000);
   });
 
   it("rejeita valor com caracteres nao numericos", () => {
@@ -186,9 +188,9 @@ describe("parseValorUrl", () => {
     expect(parseValorUrl("abc")).toBeUndefined();
   });
 
-  it("rejeita ponto isolado (sem 2 digitos no final)", () => {
+  it("rejeita ponto isolado (sem 1 ou 2 digitos no final)", () => {
     expect(parseValorUrl("50.000")).toBeUndefined();
-    expect(parseValorUrl("50.5")).toBeUndefined();
+    expect(parseValorUrl("50.")).toBeUndefined();
   });
 
   it("rejeita valor zero ou vazio", () => {

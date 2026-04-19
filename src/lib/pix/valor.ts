@@ -19,12 +19,12 @@ export const MAX_CENTAVOS = Number.MAX_SAFE_INTEGER;
 /**
  * Converte o valor da URL em centavos. Aceita "50" (reais inteiros) ou
  * "50,00" (virgula separando centavos). Como conveniencia, se terminar com
- * ".XX" (ponto + dois digitos), tratamos o ponto como virgula.
+ * "." + 1 ou 2 digitos (ex: "50.5", "50.00"), tratamos o ponto como virgula.
  * Retorna undefined se o valor nao for um numero valido positivo dentro do
  * limite seguro.
  */
 export function parseValorUrl(valorStr: string): number | undefined {
-  const normalizado = valorStr.replace(/\.(\d{2})$/, ",$1");
+  const normalizado = valorStr.replace(/\.(\d{1,2})$/, ",$1");
   if (!/^\d+(,\d+)?$/.test(normalizado)) return undefined;
   const centavos = Math.round(parseFloat(normalizado.replace(",", ".")) * 100);
   if (isNaN(centavos) || centavos <= 0 || centavos > MAX_CENTAVOS)
