@@ -148,12 +148,12 @@ export default function PixForm() {
       {url && (
         <div className="flex flex-col gap-3 rounded-xl border border-emerald-100 bg-emerald-50 p-4">
           <div className="flex flex-col gap-1">
-            <span className="text-[11px] font-semibold uppercase tracking-wider text-emerald-600">
+            <span className="text-[11px] font-semibold tracking-wider text-emerald-600 uppercase">
               Link gerado
             </span>
             <a
               href={url}
-              className="break-all text-sm font-medium text-emerald-700 underline decoration-emerald-300 underline-offset-2 transition-colors hover:text-emerald-900"
+              className="text-sm font-medium break-all text-emerald-700 underline decoration-emerald-300 underline-offset-2 transition-colors hover:text-emerald-900"
             >
               {`${typeof window !== "undefined" ? window.location.origin : ""}${url}`}
             </a>

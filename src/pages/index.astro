@@ -12,22 +12,24 @@ const canonical = `${Astro.url.origin}/`;
 >
   <div class="w-full max-w-lg">
     <div class="overflow-hidden rounded-2xl bg-white shadow-lg">
-      <!-- Header -->
+      {/* Header */}
       <div
         class="bg-gradient-to-br from-emerald-500 to-teal-400 px-8 py-7 text-center"
       >
-        <h1 class="text-2xl font-bold tracking-tight text-white">PIX QR Code</h1>
+        <h1 class="text-2xl font-bold tracking-tight text-white">
+          PIX QR Code
+        </h1>
         <p class="mt-2 text-sm text-white/80">
           Gere um link que exibe um QR Code de pagamento PIX
         </p>
       </div>
 
-      <!-- Form -->
+      {/* Form */}
       <div class="p-8">
         <PixForm client:load />
       </div>
 
-      <!-- Aviso de privacidade -->
+      {/* Aviso de privacidade */}
       <div class="border-t border-gray-100 bg-gray-50 px-8 py-4">
         <p class="text-center text-xs leading-relaxed text-gray-500">
           Nada e salvo em servidor. O link gerado contem a chave e o valor na
@@ -37,7 +39,7 @@ const canonical = `${Astro.url.origin}/`;
       </div>
     </div>
 
-    <!-- Documentacao -->
+    {/* Documentacao */}
     <div class="mt-6 rounded-2xl bg-white p-8 shadow-lg">
       <h2 class="mb-4 text-lg font-bold text-gray-900">Formato da URL</h2>
 
@@ -47,7 +49,7 @@ const canonical = `${Astro.url.origin}/`;
         </code>
       </div>
 
-      <!-- Parametros -->
+      {/* Parametros */}
       <div class="mt-6 flex flex-col gap-4">
         <div>
           <h3 class="text-sm font-semibold text-gray-900">chave-pix</h3>
@@ -115,14 +117,14 @@ const canonical = `${Astro.url.origin}/`;
             .png <span class="font-normal text-gray-400">(formato)</span>
           </h3>
           <p class="mt-1 text-sm leading-relaxed text-gray-500">
-            Adicione <code class="text-xs text-emerald-700">.png</code> ao final
-            do valor para receber apenas a imagem do QR Code em PNG (1024x1024).
-            Util para embedar em e-mails, mensagens ou documentos.
+            Adicione <code class="text-xs text-emerald-700">.png</code> ao final do
+            valor para receber apenas a imagem do QR Code em PNG (1024x1024). Util
+            para embedar em e-mails, mensagens ou documentos.
           </p>
         </div>
       </div>
 
-      <!-- Exemplos -->
+      {/* Exemplos */}
       <h3 class="mt-6 mb-3 text-sm font-semibold text-gray-900">Exemplos</h3>
       <div class="flex flex-col gap-2">
         <a
