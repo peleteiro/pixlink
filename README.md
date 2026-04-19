@@ -2,6 +2,17 @@
 
 Cloudflare Worker que gera QR Codes de pagamento PIX a partir da URL.
 
+## Caso de uso
+
+Tenho uma planilha com as contas que pago todo mes, cada linha com a
+chave PIX e o valor. Montando um link `pixlink` por linha, o pagamento
+vira um clique: abro o link, aponto o celular para o QR Code e pago.
+Sem digitar chave nem valor, sem erro de transcricao.
+
+Usando a URL `.png` da para incorporar o QR Code direto numa celula da
+planilha (via `=IMAGE(...)` no Google Sheets, por exemplo) e escanear
+sem precisar sair dela.
+
 ## URL
 
 ```
