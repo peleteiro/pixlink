@@ -1,0 +1,14 @@
+---
+import ErrorPage from "@/components/ErrorPage.astro";
+import Base from "@/layouts/Base.astro";
+---
+
+<Base
+  titulo="Pagina nao encontrada — pixlink"
+  descricao="A URL acessada nao corresponde a nenhuma pagina deste site."
+>
+  <ErrorPage
+    titulo="Pagina nao encontrada"
+    mensagem="A URL acessada nao existe neste site. Verifique o caminho ou volte para a home pra gerar um novo link PIX."
+  />
+</Base>
