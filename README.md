@@ -211,5 +211,5 @@ mise run tofu:apply  # aplicar
 
 - [Astro 6](https://astro.build) (SSR) + React 19 + Tailwind CSS 4
 - [Cloudflare Workers](https://workers.cloudflare.com)
-- [qrcode-svg](https://github.com/nicktomlin/qrcode-svg) + [@resvg/resvg-wasm](https://github.com/nicktomlin/resvg-js) (PNG)
+- [qrcode-svg](https://github.com/nicktomlin/qrcode-svg) + [@resvg/resvg-wasm](https://github.com/thx/resvg-js) (PNG)
 - [OpenTofu](https://opentofu.org) (infra)
