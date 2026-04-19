@@ -17,6 +17,22 @@ export function formatValor(centavos: number): string {
 export const MAX_CENTAVOS = Number.MAX_SAFE_INTEGER;
 
 /**
+ * Converte o valor digitado no form da home em centavos.
+ *
+ * Aqui o parse e mais permissivo do que na URL: qualquer caractere fora de
+ * digitos e virgula e ignorado, e um ponto final com 1 ou 2 digitos vira
+ * virgula decimal para facilitar colar valores em formato ingles.
+ */
+export function parseValorForm(valorStr: string): number | undefined {
+  const normalizado = valorStr.replace(/\.(\d{1,2})$/, ",$1");
+  const limpo = normalizado.replace(/[^\d,]/g, "").replace(",", ".");
+  const centavos = Math.round(parseFloat(limpo) * 100);
+  if (isNaN(centavos) || centavos <= 0 || centavos > MAX_CENTAVOS)
+    return undefined;
+  return centavos;
+}
+
+/**
  * Converte o valor da URL em centavos. Aceita "50" (reais inteiros) ou
  * "50,00" (virgula separando centavos). Como conveniencia, tambem aceita
  * ponto nos formatos pt-BR: multiplos pontos sao sempre separadores de

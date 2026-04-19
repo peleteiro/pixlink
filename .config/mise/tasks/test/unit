@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+#MISE description="Roda os testes unitarios"
+#MISE dir="{{config_root}}"
+
+set -euo pipefail
+
+pnpm vitest run src

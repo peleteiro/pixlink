@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+#MISE description="Roda todas as suites de teste"
+#MISE dir="{{config_root}}"
+
+set -euo pipefail
+
+mise run test:unit
+mise run test:integration

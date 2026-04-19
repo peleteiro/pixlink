@@ -12,6 +12,7 @@ node = "22"
 pnpm = "10"
 opentofu = "1"
 claude = "latest"
+codex = "latest"
 
 [task_config]
 dir = ".config/mise/tasks"

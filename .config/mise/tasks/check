@@ -8,6 +8,6 @@ echo "Executando verificacao completa (CI)..."
 
 pnpm prettier --check .
 pnpm astro check --minimum-severity warning
-pnpm vitest run
+mise run test
 
 echo "Verificacao completa!"

@@ -4,6 +4,7 @@ import {
   formatValor,
   gerarPayloadPix,
   montarDadosPix,
+  parseValorForm,
   parseValorUrl,
   parsearChave,
   sanitizarDescricao,
@@ -222,6 +223,37 @@ describe("parseValorUrl", () => {
     // Number.MAX_SAFE_INTEGER centavos = ~90 trilhoes de reais.
     // Acima disso o parseFloat perde precisao.
     expect(parseValorUrl("99999999999999999")).toBeUndefined();
+  });
+});
+
+describe("parseValorForm", () => {
+  it("aceita valor inteiro sem decimais", () => {
+    expect(parseValorForm("50")).toBe(5000);
+  });
+
+  it("aceita valor com virgula", () => {
+    expect(parseValorForm("50,00")).toBe(5000);
+    expect(parseValorForm("0,50")).toBe(50);
+  });
+
+  it("ignora simbolos e texto de moeda", () => {
+    expect(parseValorForm("R$ 50,00")).toBe(5000);
+    expect(parseValorForm("$50")).toBe(5000);
+  });
+
+  it("trata ponto final com 1 ou 2 digitos como virgula", () => {
+    expect(parseValorForm("50.00")).toBe(5000);
+    expect(parseValorForm("50.5")).toBe(5050);
+  });
+
+  it("arredonda fracoes de centavo", () => {
+    expect(parseValorForm("0,015")).toBe(2);
+  });
+
+  it("rejeita vazio, zero e valores acima do limite seguro", () => {
+    expect(parseValorForm("")).toBeUndefined();
+    expect(parseValorForm("0")).toBeUndefined();
+    expect(parseValorForm("99999999999999999")).toBeUndefined();
   });
 });
 

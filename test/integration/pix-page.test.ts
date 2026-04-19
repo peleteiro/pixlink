@@ -1,33 +1,26 @@
-import { experimental_AstroContainer as AstroContainer } from "astro/container";
-import reactRenderer from "@astrojs/react/server.js";
 import { beforeAll, describe, expect, it } from "vitest";
+import { getAstroContainer } from "./_astro";
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore — Astro resolve .astro via plugin do vitest, mas TS nao tem tipo.
 import ValorPage from "@/pages/[chave]/[valor].astro";
-// Nota: a rota .png importa @resvg/resvg-wasm no topo do modulo, o que
-// quebra em node puro (sem runtime wasm da Cloudflare). Preferimos nao
-// testar aqui — validacao via smoke test manual (curl) ou em CI e2e.
 
-let container: AstroContainer;
+type Params = Record<string, string>;
 
-async function render(params: Record<string, string>, url: string) {
-  return container.renderToResponse(ValorPage, {
+let renderToResponse: Awaited<
+  ReturnType<typeof getAstroContainer>
+>["renderToResponse"];
+
+async function render(params: Params, url: string) {
+  return renderToResponse(ValorPage, {
     params,
     request: new Request(url),
   });
 }
 
-describe("pagina /[chave]/[valor]", () => {
+describe("integracao: pagina /[chave]/[valor]", () => {
   beforeAll(async () => {
-    container = await AstroContainer.create();
-    container.addServerRenderer({
-      name: "@astrojs/react",
-      renderer: reactRenderer,
-    });
-    container.addClientRenderer({
-      name: "@astrojs/react",
-      entrypoint: "@astrojs/react/client.js",
-    });
+    const container = await getAstroContainer();
+    renderToResponse = container.renderToResponse.bind(container);
   });
 
   it("renderiza pagina valida com 200 e QR Code", async () => {
@@ -49,8 +42,6 @@ describe("pagina /[chave]/[valor]", () => {
       "https://pix.peleteiro.net/21992446550/50?utm_source=x",
     );
     const html = await res.text();
-    // Canonical usa origem do request + chave normalizada (+5521992446550)
-    // + valor no formato canonico, SEM os UTMs.
     expect(html).toContain(
       '<link rel="canonical" href="https://pix.peleteiro.net/%2B5521992446550/50,00">',
     );
@@ -144,7 +135,6 @@ describe("pagina /[chave]/[valor]", () => {
     const html = await res.text();
     expect(html).toContain("Descricao");
     expect(html).toContain("Almoco");
-    // Resumo da meta description junta label + display + descricao.
     expect(html).toContain('content="Telefone: +55 (21) 99244-6550 — Almoco"');
   });
 
@@ -155,7 +145,6 @@ describe("pagina /[chave]/[valor]", () => {
       `https://pix.peleteiro.net/21992446550/50,00?d=${longa}`,
     );
     const html = await res.text();
-    // O payload dentro do HTML deve conter 72 'a's mas nao 73.
     expect(html).toContain("a".repeat(72));
   });
 

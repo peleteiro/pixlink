@@ -3,7 +3,7 @@ import { useState } from "react";
 // puxar qrcode-svg no bundle client — ele tem require("fs") no .save()
 // que nunca usamos, mas gera warning do Vite.
 import { parsearChave } from "@/lib/pix/chave";
-import { MAX_CENTAVOS, centavosParaUrl } from "@/lib/pix/valor";
+import { centavosParaUrl, parseValorForm } from "@/lib/pix/valor";
 
 export type ErroForm = "chave-vazia" | "chave-invalida" | "valor-invalido";
 
@@ -26,11 +26,8 @@ export function construirUrl(
   if (!chave.trim()) return { erro: "chave-vazia" };
   if (!parsearChave(chave)) return { erro: "chave-invalida" };
 
-  const normalizado = valor.replace(/\.(\d{1,2})$/, ",$1");
-  const limpo = normalizado.replace(/[^\d,]/g, "").replace(",", ".");
-  const centavos = Math.round(parseFloat(limpo) * 100);
-  if (isNaN(centavos) || centavos <= 0 || centavos > MAX_CENTAVOS)
-    return { erro: "valor-invalido" };
+  const centavos = parseValorForm(valor);
+  if (centavos === undefined) return { erro: "valor-invalido" };
 
   let url = `/${encodeURIComponent(chave)}/${centavosParaUrl(centavos)}`;
   const d = descricao.trim();

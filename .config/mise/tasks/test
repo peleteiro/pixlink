@@ -1,7 +1,0 @@
-#!/usr/bin/env bash
-#MISE description="Roda a suite de testes (vitest)"
-#MISE dir="{{config_root}}"
-
-set -euo pipefail
-
-pnpm vitest run "$@"

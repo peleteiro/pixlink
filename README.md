@@ -193,7 +193,9 @@ Configurados em `lefthook.yml`:
 ```bash
 mise run deploy  # build + deploy Cloudflare Workers
 mise run lint    # format + type check
-mise run test    # roda a suite de testes (vitest)
+mise run test    # roda todas as suites de teste
+mise run test:unit         # roda os testes unitarios
+mise run test:integration  # roda os testes de integracao
 mise run check   # verificacao CI (format + types + testes)
 mise run clean   # limpar gerados
 ```
@@ -204,8 +206,11 @@ DNS e Worker custom domain gerenciados via OpenTofu em `sysadmin/tofu/`.
 
 ```bash
 mise run tofu:plan   # ver mudancas
-mise run tofu:apply  # aplicar
 ```
+
+Aplicacao de mudancas de infra fica fora do fluxo normal de desenvolvimento.
+Neste repositorio, agentes nao devem executar `tofu apply`/`terraform apply`,
+e deploy do app continua separado via `mise run deploy`.
 
 ## Stack
 
