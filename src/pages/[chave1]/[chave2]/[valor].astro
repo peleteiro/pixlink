@@ -1,0 +1,13 @@
+---
+// Rota auxiliar para quando o usuario monta a URL manualmente com a "/" do
+// CNPJ (ex: /12.345.678/0001-95/5000). Junta os dois segmentos e redireciona
+// para a rota canonica /{chave}/{valor}.
+const { chave1, chave2, valor } = Astro.params;
+
+if (!chave1 || !chave2 || !valor) {
+  return new Response("Not Found", { status: 404 });
+}
+
+const destino = `/${chave1}${chave2}/${valor}${Astro.url.search}`;
+return Astro.redirect(destino, 301);
+---
