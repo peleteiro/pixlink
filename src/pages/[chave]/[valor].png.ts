@@ -9,7 +9,9 @@ let wasmInitialized = false;
 export const GET: APIRoute = async ({ params, url }) => {
   const { chave: chaveRaw, valor: valorStr } = params;
   const valorCentavos = parseInt(valorStr!, 10);
-  const parsed = chaveRaw ? parsearChave(decodeURIComponent(chaveRaw)) : undefined;
+  const parsed = chaveRaw
+    ? parsearChave(decodeURIComponent(chaveRaw))
+    : undefined;
 
   if (!parsed || !valorStr || isNaN(valorCentavos) || valorCentavos <= 0) {
     return new Response("Chave ou valor invalido", { status: 400 });

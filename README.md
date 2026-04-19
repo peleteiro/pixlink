@@ -32,12 +32,12 @@ Adicione `.png` ao valor para receber apenas a imagem do QR Code (1024x1024):
 
 ## Exemplos
 
-| URL | Resultado |
-|-----|-----------|
-| `/21992446550/5000` | Pagina com QR Code de R$ 50,00 |
-| `/052.868.827-81/1500` | QR Code para CPF, R$ 15,00 |
-| `/jose@peleteiro.net/10000?d=Consultoria` | QR Code com descricao |
-| `/21992446550/5000.png` | Imagem PNG do QR Code |
+| URL                                       | Resultado                      |
+| ----------------------------------------- | ------------------------------ |
+| `/21992446550/5000`                       | Pagina com QR Code de R$ 50,00 |
+| `/052.868.827-81/1500`                    | QR Code para CPF, R$ 15,00     |
+| `/jose@peleteiro.net/10000?d=Consultoria` | QR Code com descricao          |
+| `/21992446550/5000.png`                   | Imagem PNG do QR Code          |
 
 ## Desenvolvimento
 

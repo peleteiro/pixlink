@@ -1,8 +1,26 @@
 {
   "includeCoAuthoredBy": false,
   "gitAttribution": false,
-  "allowedTools": ["Bash", "Edit", "EditFiles", "Read", "ReadFiles", "WebFetch", "WebSearch", "Skill"],
+  "allowedTools": [
+    "Bash",
+    "Edit",
+    "EditFiles",
+    "Read",
+    "ReadFiles",
+    "WebFetch",
+    "WebSearch",
+    "Skill"
+  ],
   "permissions": {
-    "allow": ["Bash(*)", "Edit(*)", "EditFiles(*)", "Read(*)", "ReadFiles(*)", "WebFetch(*)", "WebSearch(*)", "Skill(*)"]
+    "allow": [
+      "Bash(*)",
+      "Edit(*)",
+      "EditFiles(*)",
+      "Read(*)",
+      "ReadFiles(*)",
+      "WebFetch(*)",
+      "WebSearch(*)",
+      "Skill(*)"
+    ]
   }
 }
