@@ -1,5 +1,24 @@
 import { useState } from "react";
 
+/**
+ * Monta o caminho do pixlink a partir dos campos do form.
+ * Retorna undefined se a chave estiver vazia ou o valor for invalido.
+ * Aceita valor com virgula ou ponto decimal.
+ */
+export function construirUrl(
+  chave: string,
+  valor: string,
+  descricao = "",
+): string | undefined {
+  const centavos = Math.round(parseFloat(valor.replace(",", ".")) * 100);
+  if (!chave || isNaN(centavos) || centavos <= 0) return undefined;
+
+  let result = `/${encodeURIComponent(chave)}/${centavos}`;
+  const d = descricao.trim();
+  if (d) result += `?d=${encodeURIComponent(d)}`;
+  return result;
+}
+
 export default function PixForm() {
   const [chave, setChave] = useState("");
   const [valor, setValor] = useState("");
@@ -7,15 +26,8 @@ export default function PixForm() {
   const [url, setUrl] = useState("");
 
   function gerarUrl() {
-    const centavos = Math.round(parseFloat(valor.replace(",", ".")) * 100);
-    if (!chave || isNaN(centavos) || centavos <= 0) return;
-
-    const chaveEncoded = encodeURIComponent(chave);
-    let result = `/${chaveEncoded}/${centavos}`;
-    if (descricao.trim()) {
-      result += `?d=${encodeURIComponent(descricao.trim())}`;
-    }
-    setUrl(result);
+    const result = construirUrl(chave, valor, descricao);
+    if (result) setUrl(result);
   }
 
   function copiarUrl() {

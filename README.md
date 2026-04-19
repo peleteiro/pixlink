@@ -80,7 +80,8 @@ tilt up          # servidor dev na porta 3000
 ```bash
 mise run deploy  # build + deploy Cloudflare Workers
 mise run lint    # format + type check
-mise run check   # verificacao CI
+mise run test    # roda a suite de testes (vitest)
+mise run check   # verificacao CI (format + types + testes)
 mise run clean   # limpar gerados
 ```
 
