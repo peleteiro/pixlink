@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 interface Props {
   url: string;
@@ -6,27 +6,38 @@ interface Props {
 }
 
 export default function ShareButton({ url, valor }: Props) {
-  const [supported, setSupported] = useState(false);
+  const [copied, setCopied] = useState(false);
 
-  useEffect(() => {
-    setSupported(typeof navigator.share === "function");
-  }, []);
-
-  function handleShare() {
-    navigator.share({
+  async function handleShare() {
+    // Usa navigator.share quando disponivel (mobile); caso contrario copia
+    // a URL no clipboard. Assim o botao sempre renderiza com o mesmo
+    // tamanho — sem flash de "disabled" no SSR nem layout shift.
+    const data = {
       title: `PIX ${valor}`,
       text: `Pagamento PIX de ${valor}`,
       url,
-    });
+    };
+    if (typeof navigator.share === "function") {
+      try {
+        await navigator.share(data);
+        return;
+      } catch {
+        // Usuario cancelou (AbortError) ou share falhou — nao cai no fallback.
+        return;
+      }
+    }
+    try {
+      await navigator.clipboard.writeText(url);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      // Sem suporte a clipboard API — nada a fazer aqui.
+    }
   }
 
   return (
-    <button
-      onClick={handleShare}
-      disabled={!supported}
-      className="mt-3 w-full cursor-pointer rounded-xl border-2 border-emerald-500 bg-white px-4 py-4 text-[15px] font-semibold tracking-wide text-emerald-600 transition-all hover:-translate-y-0.5 hover:bg-emerald-50 hover:shadow-lg hover:shadow-emerald-500/20 active:translate-y-0 disabled:cursor-default disabled:border-gray-200 disabled:text-gray-300 disabled:shadow-none disabled:hover:translate-y-0 disabled:hover:bg-white"
-    >
-      Compartilhar
+    <button onClick={handleShare} className="btn-secondary mt-3">
+      {copied ? "Link copiado!" : "Compartilhar link"}
     </button>
   );
 }

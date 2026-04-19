@@ -1,1 +1,12 @@
 @import "tailwindcss";
+
+/* Variantes de botao compartilhadas entre CopyButton, ShareButton,
+ * ErrorPage e botoes do form. Evita duplicar a mesma lista de classes
+ * Tailwind em varios arquivos. */
+.btn-primary {
+  @apply w-full cursor-pointer rounded-xl bg-emerald-500 px-4 py-4 text-[15px] font-semibold tracking-wide text-white shadow-emerald-500/30 transition-all hover:-translate-y-0.5 hover:bg-emerald-600 hover:shadow-lg active:translate-y-0;
+}
+
+.btn-secondary {
+  @apply w-full cursor-pointer rounded-xl border-2 border-emerald-500 bg-white px-4 py-4 text-[15px] font-semibold tracking-wide text-emerald-600 transition-all hover:-translate-y-0.5 hover:bg-emerald-50 hover:shadow-lg hover:shadow-emerald-500/20 active:translate-y-0;
+}

@@ -1,5 +1,13 @@
 import { describe, expect, it } from "vitest";
-import { formatValor, gerarPayloadPix, parsearChave } from "./pix";
+import {
+  centavosParaUrl,
+  formatValor,
+  gerarPayloadPix,
+  montarDadosPix,
+  parseValorUrl,
+  parsearChave,
+  sanitizarDescricao,
+} from "@/lib/pix";
 
 describe("parsearChave", () => {
   describe("e-mail", () => {
@@ -21,6 +29,14 @@ describe("parsearChave", () => {
         display: "jose+c6@peleteiro.net",
         label: "E-mail",
       });
+    });
+
+    it("rejeita strings com @ mas sem estrutura de e-mail", () => {
+      expect(parsearChave("@")).toBeUndefined();
+      expect(parsearChave("foo@")).toBeUndefined();
+      expect(parsearChave("@bar")).toBeUndefined();
+      // Sem TLD (nao tem ponto no dominio).
+      expect(parsearChave("foo@bar")).toBeUndefined();
     });
   });
 
@@ -144,6 +160,70 @@ describe("parsearChave", () => {
   });
 });
 
+describe("parseValorUrl", () => {
+  it("aceita valor inteiro (sem decimais)", () => {
+    expect(parseValorUrl("50")).toBe(5000);
+  });
+
+  it("aceita valor com virgula e dois decimais", () => {
+    expect(parseValorUrl("50,00")).toBe(5000);
+    expect(parseValorUrl("50,50")).toBe(5050);
+  });
+
+  it("aceita valor abaixo de 1 real", () => {
+    expect(parseValorUrl("0,01")).toBe(1);
+    expect(parseValorUrl("0,50")).toBe(50);
+  });
+
+  it("trata ponto final com 2 digitos como virgula", () => {
+    expect(parseValorUrl("50.00")).toBe(5000);
+    expect(parseValorUrl("1234.56")).toBe(123456);
+  });
+
+  it("rejeita valor com caracteres nao numericos", () => {
+    expect(parseValorUrl("R$50")).toBeUndefined();
+    expect(parseValorUrl("50abc")).toBeUndefined();
+    expect(parseValorUrl("abc")).toBeUndefined();
+  });
+
+  it("rejeita ponto isolado (sem 2 digitos no final)", () => {
+    expect(parseValorUrl("50.000")).toBeUndefined();
+    expect(parseValorUrl("50.5")).toBeUndefined();
+  });
+
+  it("rejeita valor zero ou vazio", () => {
+    expect(parseValorUrl("0")).toBeUndefined();
+    expect(parseValorUrl("0,00")).toBeUndefined();
+    expect(parseValorUrl("")).toBeUndefined();
+  });
+
+  it("rejeita negativos (a URL nao deve ter sinal)", () => {
+    expect(parseValorUrl("-50")).toBeUndefined();
+  });
+
+  it("rejeita valor acima do limite seguro (MAX_SAFE_INTEGER centavos)", () => {
+    // Number.MAX_SAFE_INTEGER centavos = ~90 trilhoes de reais.
+    // Acima disso o parseFloat perde precisao.
+    expect(parseValorUrl("99999999999999999")).toBeUndefined();
+  });
+});
+
+describe("centavosParaUrl", () => {
+  it("formata em reais,centavos com 2 digitos", () => {
+    expect(centavosParaUrl(5000)).toBe("50,00");
+    expect(centavosParaUrl(5050)).toBe("50,50");
+  });
+
+  it("preenche centavos com zero a esquerda", () => {
+    expect(centavosParaUrl(1)).toBe("0,01");
+    expect(centavosParaUrl(50)).toBe("0,50");
+  });
+
+  it("formata valores grandes", () => {
+    expect(centavosParaUrl(5000000)).toBe("50000,00");
+  });
+});
+
 describe("formatValor", () => {
   it("formata centavos em BRL", () => {
     // Usa NBSP do Intl entre R$ e valor (\u00A0)
@@ -193,5 +273,108 @@ describe("gerarPayloadPix", () => {
     const a = gerarPayloadPix("+5521992446550", 5000);
     const b = gerarPayloadPix("+5521992446550", 5000);
     expect(a).toBe(b);
+  });
+
+  it("remove acentos da descricao antes de gerar o payload", () => {
+    const payload = gerarPayloadPix("+5521992446550", 5000, "Almoço café");
+    // TLV = "02" + len (decimal, 2 digits) + "Almoco cafe" (11 chars)
+    expect(payload).toContain("0211Almoco cafe");
+    expect(payload).not.toContain("ç");
+    expect(payload).not.toContain("é");
+  });
+
+  it("dropa emojis e caracteres nao-ASCII da descricao", () => {
+    const payload = gerarPayloadPix("+5521992446550", 5000, "Pizza 🍕 hoje");
+    // Emoji removido, espacos preservados: "Pizza  hoje" (2 espacos)
+    expect(payload).toContain("Pizza  hoje");
+    expect(payload).not.toContain("🍕");
+  });
+});
+
+describe("sanitizarDescricao", () => {
+  it("remove diacriticos mantendo letras base", () => {
+    expect(sanitizarDescricao("café")).toBe("cafe");
+    expect(sanitizarDescricao("pão de açúcar")).toBe("pao de acucar");
+    expect(sanitizarDescricao("AÇÃO")).toBe("ACAO");
+  });
+
+  it("dropa emojis e simbolos nao-ASCII", () => {
+    expect(sanitizarDescricao("oi 🍕")).toBe("oi ");
+    expect(sanitizarDescricao("→ seta")).toBe(" seta");
+  });
+
+  it("mantem ASCII printavel intacto", () => {
+    expect(sanitizarDescricao("Almoco R$50,00 - Bar!")).toBe(
+      "Almoco R$50,00 - Bar!",
+    );
+  });
+
+  it("remove caracteres de controle", () => {
+    expect(sanitizarDescricao("a\nb\tc")).toBe("abc");
+  });
+});
+
+describe("montarDadosPix", () => {
+  const telefone = parsearChave("21992446550")!;
+
+  it("retorna payload, svg, url canonica e meta tags", () => {
+    const origin = "https://pix.peleteiro.net";
+    const dados = montarDadosPix(telefone, 5000, origin);
+
+    expect(dados.payload).toContain("br.gov.bcb.pix");
+    expect(dados.payload).toContain("+5521992446550");
+    expect(dados.svg).toContain("<svg");
+    expect(dados.valorFormatado).toBe("R$\u00a050,00");
+    expect(dados.titulo).toBe("PIX R$\u00a050,00");
+    expect(dados.label).toBe("Telefone");
+    expect(dados.display).toBe("+55 (21) 99244-6550");
+    expect(dados.resumo).toBe("Telefone: +55 (21) 99244-6550");
+  });
+
+  it("canonical url usa o formato /{chave}/{reais,centavos}", () => {
+    const origin = "https://pix.peleteiro.net";
+    const dados = montarDadosPix(telefone, 5000, origin);
+
+    // Chave e URL-encoded (+ vira %2B).
+    expect(dados.canonicalUrl).toBe(
+      "https://pix.peleteiro.net/%2B5521992446550/50,00",
+    );
+    expect(dados.imagemUrl).toBe(
+      "https://pix.peleteiro.net/%2B5521992446550/50,00.png",
+    );
+  });
+
+  it("canonical url inclui apenas a descricao, nao outros params", () => {
+    // A funcao so recebe a descricao — UTMs, etc. nao sao passados, entao
+    // por design nao aparecem na canonical. Esse teste confirma o formato.
+    const dados = montarDadosPix(
+      telefone,
+      5000,
+      "https://pix.peleteiro.net",
+      "Almoco no Bar",
+    );
+    expect(dados.canonicalUrl).toContain("?d=Almoco%20no%20Bar");
+    expect(dados.resumo).toBe("Telefone: +55 (21) 99244-6550 — Almoco no Bar");
+  });
+
+  it("descricao entra no payload PIX", () => {
+    const dados = montarDadosPix(
+      telefone,
+      5000,
+      "https://pix.peleteiro.net",
+      "Almoco",
+    );
+    expect(dados.payload).toContain("0206Almoco");
+  });
+
+  it("funciona com chaves de outros tipos", () => {
+    const email = parsearChave("jose@peleteiro.net")!;
+    const dados = montarDadosPix(email, 10000, "https://x.com");
+
+    expect(dados.label).toBe("E-mail");
+    expect(dados.display).toBe("jose@peleteiro.net");
+    expect(dados.canonicalUrl).toBe(
+      "https://x.com/jose%40peleteiro.net/100,00",
+    );
   });
 });

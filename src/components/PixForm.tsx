@@ -1,33 +1,60 @@
 import { useState } from "react";
+import { MAX_CENTAVOS, centavosParaUrl, parsearChave } from "@/lib/pix";
+
+export type ErroForm = "chave-vazia" | "chave-invalida" | "valor-invalido";
 
 /**
- * Monta o caminho do pixlink a partir dos campos do form.
- * Retorna undefined se a chave estiver vazia ou o valor for invalido.
- * Aceita valor com virgula ou ponto decimal.
+ * Valida os campos do form e monta o caminho do pixlink. Retorna a URL
+ * gerada ou o codigo de erro especifico pra feedback no form.
+ *
+ * No valor, so digitos e virgula importam: a virgula separa os centavos
+ * e qualquer outro caractere ("R$", ".", "$", espacos, etc.) e ignorado.
+ * Como conveniencia, se o valor terminar com ".XX" (ponto + dois digitos)
+ * tratamos esse ponto como virgula — comum ao colar valores formatados
+ * em ingles. Valores negativos viram positivos (o "-" e ignorado).
  */
 export function construirUrl(
   chave: string,
   valor: string,
   descricao = "",
-): string | undefined {
-  const centavos = Math.round(parseFloat(valor.replace(",", ".")) * 100);
-  if (!chave || isNaN(centavos) || centavos <= 0) return undefined;
+): { url: string } | { erro: ErroForm } {
+  if (!chave.trim()) return { erro: "chave-vazia" };
+  if (!parsearChave(chave)) return { erro: "chave-invalida" };
 
-  let result = `/${encodeURIComponent(chave)}/${centavos}`;
+  const normalizado = valor.replace(/\.(\d{2})$/, ",$1");
+  const limpo = normalizado.replace(/[^\d,]/g, "").replace(",", ".");
+  const centavos = Math.round(parseFloat(limpo) * 100);
+  if (isNaN(centavos) || centavos <= 0 || centavos > MAX_CENTAVOS)
+    return { erro: "valor-invalido" };
+
+  let url = `/${encodeURIComponent(chave)}/${centavosParaUrl(centavos)}`;
   const d = descricao.trim();
-  if (d) result += `?d=${encodeURIComponent(d)}`;
-  return result;
+  if (d) url += `?d=${encodeURIComponent(d)}`;
+  return { url };
 }
+
+const MENSAGENS_ERRO: Record<ErroForm, string> = {
+  "chave-vazia": "Informe a chave PIX.",
+  "chave-invalida": "Chave invalida. Use telefone, CPF, CNPJ, e-mail ou UUID.",
+  "valor-invalido": "Informe um valor valido maior que zero.",
+};
 
 export default function PixForm() {
   const [chave, setChave] = useState("");
   const [valor, setValor] = useState("");
   const [descricao, setDescricao] = useState("");
   const [url, setUrl] = useState("");
+  const [erro, setErro] = useState<ErroForm | undefined>(undefined);
 
   function gerarUrl() {
     const result = construirUrl(chave, valor, descricao);
-    if (result) setUrl(result);
+    if ("erro" in result) {
+      setErro(result.erro);
+      setUrl("");
+      return;
+    }
+    setErro(undefined);
+    setUrl(result.url);
   }
 
   function copiarUrl() {
@@ -35,6 +62,17 @@ export default function PixForm() {
     const full = `${window.location.origin}${url}`;
     navigator.clipboard.writeText(full);
   }
+
+  const erroChave =
+    erro === "chave-vazia" || erro === "chave-invalida" ? erro : undefined;
+  const erroValor = erro === "valor-invalido" ? erro : undefined;
+
+  const inputBase =
+    "rounded-lg border px-4 py-3 text-sm text-gray-900 outline-none transition-colors placeholder:text-gray-300 focus:ring-2";
+  const inputOk =
+    "border-gray-200 focus:border-emerald-400 focus:ring-emerald-400/20";
+  const inputErr =
+    "border-rose-400 focus:border-rose-500 focus:ring-rose-400/20";
 
   return (
     <div className="flex flex-col gap-5">
@@ -52,8 +90,12 @@ export default function PixForm() {
           placeholder="Telefone, CPF, CNPJ, e-mail ou chave aleatoria"
           value={chave}
           onChange={(e) => setChave(e.target.value)}
-          className="rounded-lg border border-gray-200 px-4 py-3 text-sm text-gray-900 outline-none transition-colors placeholder:text-gray-300 focus:border-emerald-400 focus:ring-2 focus:ring-emerald-400/20"
+          aria-invalid={erroChave ? true : undefined}
+          className={`${inputBase} ${erroChave ? inputErr : inputOk}`}
         />
+        {erroChave && (
+          <p className="text-xs text-rose-600">{MENSAGENS_ERRO[erroChave]}</p>
+        )}
       </div>
 
       {/* Valor */}
@@ -71,8 +113,12 @@ export default function PixForm() {
           placeholder="50,00"
           value={valor}
           onChange={(e) => setValor(e.target.value)}
-          className="rounded-lg border border-gray-200 px-4 py-3 text-sm text-gray-900 outline-none transition-colors placeholder:text-gray-300 focus:border-emerald-400 focus:ring-2 focus:ring-emerald-400/20"
+          aria-invalid={erroValor ? true : undefined}
+          className={`${inputBase} ${erroValor ? inputErr : inputOk}`}
         />
+        {erroValor && (
+          <p className="text-xs text-rose-600">{MENSAGENS_ERRO[erroValor]}</p>
+        )}
       </div>
 
       {/* Descricao */}
@@ -90,15 +136,11 @@ export default function PixForm() {
           placeholder="Ex: Almoco"
           value={descricao}
           onChange={(e) => setDescricao(e.target.value)}
-          className="rounded-lg border border-gray-200 px-4 py-3 text-sm text-gray-900 outline-none transition-colors placeholder:text-gray-300 focus:border-emerald-400 focus:ring-2 focus:ring-emerald-400/20"
+          className={`${inputBase} ${inputOk}`}
         />
       </div>
 
-      {/* Botao gerar */}
-      <button
-        onClick={gerarUrl}
-        className="w-full cursor-pointer rounded-xl bg-emerald-500 px-4 py-4 text-[15px] font-semibold tracking-wide text-white transition-all hover:-translate-y-0.5 hover:bg-emerald-600 hover:shadow-lg hover:shadow-emerald-500/30 active:translate-y-0"
-      >
+      <button onClick={gerarUrl} className="btn-primary">
         Gerar link do PIX
       </button>
 

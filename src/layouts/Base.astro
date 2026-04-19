@@ -1,0 +1,62 @@
+---
+import GoogleAnalytics from "@/components/GoogleAnalytics.astro";
+import "@/styles/global.css";
+
+interface Props {
+  titulo: string;
+  descricao?: string;
+  canonical?: string;
+  /** Imagem Open Graph (absoluta). Omitir se nao houver preview. */
+  ogImage?: string;
+  ogImageAlt?: string;
+}
+
+const { titulo, descricao, canonical, ogImage, ogImageAlt } = Astro.props;
+---
+
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{titulo}</title>
+    {descricao && <meta name="description" content={descricao} />}
+    {canonical && <link rel="canonical" href={canonical} />}
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+
+    <!-- Open Graph (WhatsApp, Telegram, Facebook, LinkedIn) -->
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="pixlink" />
+    <meta property="og:title" content={titulo} />
+    {descricao && <meta property="og:description" content={descricao} />}
+    {canonical && <meta property="og:url" content={canonical} />}
+    {
+      ogImage && (
+        <>
+          <meta property="og:image" content={ogImage} />
+          <meta property="og:image:type" content="image/png" />
+          <meta property="og:image:width" content="1024" />
+          <meta property="og:image:height" content="1024" />
+          {ogImageAlt && (
+            <meta property="og:image:alt" content={ogImageAlt} />
+          )}
+        </>
+      )
+    }
+
+    <!-- Twitter/X -->
+    <meta name="twitter:card" content={ogImage ? "summary_large_image" : "summary"} />
+    <meta name="twitter:title" content={titulo} />
+    {descricao && <meta name="twitter:description" content={descricao} />}
+    {ogImage && <meta name="twitter:image" content={ogImage} />}
+
+    <slot name="head" />
+
+    <GoogleAnalytics />
+  </head>
+
+  <body
+    class="flex min-h-dvh items-center justify-center bg-gray-100 p-6 font-sans text-gray-900 antialiased"
+  >
+    <slot />
+  </body>
+</html>

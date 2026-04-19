@@ -1,19 +1,21 @@
 import type { APIRoute } from "astro";
 import { initWasm, Resvg } from "@resvg/resvg-wasm";
 import wasmModule from "@resvg/resvg-wasm/index_bg.wasm";
-import { gerarPayloadPix, parsearChave } from "../../lib/pix";
-import { gerarSvgPng } from "../../lib/qrcode";
+import {
+  gerarPayloadPix,
+  gerarSvgPng,
+  parseValorUrl,
+  parsearChave,
+} from "@/lib/pix";
 
 let wasmInitialized = false;
 
 export const GET: APIRoute = async ({ params, url }) => {
   const { chave: chaveRaw, valor: valorStr } = params;
-  const valorCentavos = parseInt(valorStr!, 10);
-  const parsed = chaveRaw
-    ? parsearChave(decodeURIComponent(chaveRaw))
-    : undefined;
+  const valorCentavos = valorStr ? parseValorUrl(valorStr) : undefined;
+  const parsed = chaveRaw ? parsearChave(chaveRaw) : undefined;
 
-  if (!parsed || !valorStr || isNaN(valorCentavos) || valorCentavos <= 0) {
+  if (!parsed || valorCentavos === undefined) {
     return new Response("Chave ou valor invalido", { status: 400 });
   }
 

@@ -1,9 +1,6 @@
 /**
- * Gera o payload PIX no formato EMV QR Code (BR Code estático).
- * Especificação: https://www.bcb.gov.br/content/estabilidadefinanceira/pix/Regulamento_Pix/II-ManualdePadroesparaIniciacaodoPix.pdf
+ * Parsing e validacao de chaves PIX (telefone, CPF, CNPJ, e-mail, aleatoria).
  */
-
-// --- Tipos de chave ---
 
 type TipoChave = "telefone" | "cpf" | "cnpj" | "email" | "aleatoria";
 
@@ -21,17 +18,23 @@ const UUID_REGEX =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
 const HEX32_REGEX = /^[0-9a-f]{32}$/;
 
+// Validacao basica de e-mail: localpart@dominio.tld. Rejeita lixo como
+// "@", "foo@", "@bar", "foo@bar" (sem TLD). Nao tenta validar RFC
+// completo — basta evitar URLs nitidamente quebradas.
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
 /**
  * Parseia a chave PIX da URL e retorna a chave normalizada + display.
  *
- * Estratégia: se contém "@" é e-mail. Se bate com o formato UUID é chave
- * aleatória. Caso contrário, extrai só os dígitos (ignora pontuação,
- * parênteses, espaços, "+") e tenta CPF (11 dígitos), CNPJ (14 dígitos)
- * ou telefone BR (10-13 dígitos, com ou sem DDI 55).
+ * Estratégia: se contém "@" é e-mail (validado). Se bate com o formato UUID
+ * é chave aleatória. Caso contrário, extrai só os dígitos (ignora
+ * pontuação, parênteses, espaços, "+") e tenta CPF (11 dígitos), CNPJ
+ * (14 dígitos) ou telefone BR (10-13 dígitos, com ou sem DDI 55).
  */
 export function parsearChave(raw: string): ChavePix | undefined {
   // E-mail
   if (raw.includes("@")) {
+    if (!EMAIL_REGEX.test(raw)) return undefined;
     return { tipo: "email", chave: raw, display: raw, label: "E-mail" };
   }
 
@@ -158,71 +161,4 @@ function validarCnpj(digits: string): boolean {
   if (dv2 !== nums[13]) return false;
 
   return true;
-}
-
-// --- Formatação ---
-
-export function formatValor(centavos: number): string {
-  return (centavos / 100).toLocaleString("pt-BR", {
-    style: "currency",
-    currency: "BRL",
-  });
-}
-
-// --- Payload PIX ---
-
-function tlv(id: string, value: string): string {
-  const len = value.length.toString().padStart(2, "0");
-  return `${id}${len}${value}`;
-}
-
-function crc16(payload: string): string {
-  const polynomial = 0x1021;
-  let crc = 0xffff;
-
-  for (let i = 0; i < payload.length; i++) {
-    crc ^= payload.charCodeAt(i) << 8;
-    for (let j = 0; j < 8; j++) {
-      if (crc & 0x8000) {
-        crc = ((crc << 1) ^ polynomial) & 0xffff;
-      } else {
-        crc = (crc << 1) & 0xffff;
-      }
-    }
-  }
-
-  return crc.toString(16).toUpperCase().padStart(4, "0");
-}
-
-export function gerarPayloadPix(
-  chave: string,
-  valorCentavos: number,
-  descricao?: string,
-): string {
-  const valor = (valorCentavos / 100).toFixed(2);
-
-  // Merchant Account Information (ID 26)
-  const gui = tlv("00", "br.gov.bcb.pix");
-  const key = tlv("01", chave);
-  // Campo 02 = descrição (opcional, max 73 chars após gui+key)
-  const desc = descricao ? tlv("02", descricao.slice(0, 72)) : "";
-  const merchantAccount = tlv("26", gui + key + desc);
-
-  const parts = [
-    tlv("00", "01"), // Payload Format Indicator
-    tlv("01", "12"), // Point of Initiation Method (12 = static)
-    merchantAccount, // Merchant Account Information
-    tlv("52", "0000"), // Merchant Category Code
-    tlv("53", "986"), // Transaction Currency (BRL)
-    tlv("54", valor), // Transaction Amount
-    tlv("58", "BR"), // Country Code
-    tlv("59", "PIX"), // Merchant Name
-    tlv("60", "BRASIL"), // Merchant City
-    tlv("62", tlv("05", "***")), // Additional Data Field
-  ];
-
-  const payloadSemCRC = parts.join("") + "6304";
-  const checksum = crc16(payloadSemCRC);
-
-  return payloadSemCRC + checksum;
 }
