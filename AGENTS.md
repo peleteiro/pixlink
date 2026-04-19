@@ -34,20 +34,21 @@ Exemplo: `/21992446550/5000` → QR Code PIX de R$50,00 para +55 21 99244-6550
 
 ### Mapa do Projeto
 
-| Caminho | Proposito |
-| :--- | :--- |
-| `src/pages/[chave]/[valor].astro` | Pagina principal — gera QR Code PIX |
-| `src/lib/pix.ts` | Payload PIX (formato EMV BR Code + CRC16) |
-| `src/lib/qrcode.ts` | Geracao do SVG do QR Code |
-| `sysadmin/tofu/` | Infraestrutura (DNS pix.peleteiro.net) |
-| `.config/mise/tasks/` | Scripts de tarefas |
+| Caminho                           | Proposito                                 |
+| :-------------------------------- | :---------------------------------------- |
+| `src/pages/[chave]/[valor].astro` | Pagina principal — gera QR Code PIX       |
+| `src/lib/pix.ts`                  | Payload PIX (formato EMV BR Code + CRC16) |
+| `src/lib/qrcode.ts`               | Geracao do SVG do QR Code                 |
+| `sysadmin/tofu/`                  | Infraestrutura (DNS pix.peleteiro.net)    |
+| `.config/mise/tasks/`             | Scripts de tarefas                        |
 
 ### Payload PIX
 
 O payload segue a especificacao EMV QR Code do Banco Central:
+
 - Formato TLV (Tag-Length-Value)
 - CRC16-CCITT para checksum
-- Suporta chaves: telefone, CPF, e-mail, chave aleatoria
+- Suporta chaves: telefone, CPF, CNPJ, e-mail, chave aleatoria
 
 ## Fluxos de Trabalho
 
@@ -63,7 +64,7 @@ mise run clean     # Limpar gerados
 ## Padroes de Codigo
 
 - **Conventional Commits**: `feat:`, `fix:`, `refactor:`, `chore:`
-- **Comentarios**: Explique o *porque*, nao o *o que*
+- **Comentarios**: Explique o _porque_, nao o _o que_
 - **Git**: NUNCA commit/deploy sem pedido explicito
 
 ## Instrucoes para Agentes
