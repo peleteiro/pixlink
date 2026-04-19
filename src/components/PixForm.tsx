@@ -49,7 +49,7 @@ export default function PixForm() {
         <input
           id="chave"
           type="text"
-          placeholder="Telefone, CPF ou e-mail"
+          placeholder="Telefone, CPF, CNPJ, e-mail ou chave aleatoria"
           value={chave}
           onChange={(e) => setChave(e.target.value)}
           className="rounded-lg border border-gray-200 px-4 py-3 text-sm text-gray-900 outline-none transition-colors placeholder:text-gray-300 focus:border-emerald-400 focus:ring-2 focus:ring-emerald-400/20"
