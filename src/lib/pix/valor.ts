@@ -18,13 +18,28 @@ export const MAX_CENTAVOS = Number.MAX_SAFE_INTEGER;
 
 /**
  * Converte o valor da URL em centavos. Aceita "50" (reais inteiros) ou
- * "50,00" (virgula separando centavos). Como conveniencia, se terminar com
- * "." + 1 ou 2 digitos (ex: "50.5", "50.00"), tratamos o ponto como virgula.
- * Retorna undefined se o valor nao for um numero valido positivo dentro do
- * limite seguro.
+ * "50,00" (virgula separando centavos). Como conveniencia, tambem aceita
+ * ponto nos formatos pt-BR: multiplos pontos sao sempre separadores de
+ * milhar (ex: "5.000.000" -> R$5.000.000,00, "5.000.00" -> R$500.000,00);
+ * um unico ponto em posicao valida de milhar (ex: "50.000" -> R$50.000,00);
+ * e ponto final com 1 ou 2 digitos tratado como virgula decimal (ex: "50.5",
+ * "50.00"). Retorna undefined se o valor nao for um numero valido positivo
+ * dentro do limite seguro.
  */
 export function parseValorUrl(valorStr: string): number | undefined {
-  const normalizado = valorStr.replace(/\.(\d{1,2})$/, ",$1");
+  let normalizado = valorStr;
+  const pontos = (normalizado.match(/\./g) || []).length;
+  if (pontos >= 2) {
+    // Multiplos pontos: sao separadores de milhar (pt-BR), mesmo que
+    // malformados (ex: "5.000.00" -> "500000").
+    normalizado = normalizado.replace(/\./g, "");
+  } else if (/^\d{1,3}\.\d{3}(,\d{1,2})?$/.test(normalizado)) {
+    // Unico ponto em posicao de milhar (ex: "50.000", "1.000,50").
+    normalizado = normalizado.replace(/\./g, "");
+  } else {
+    // Conveniencia: "50.5" ou "50.00" -> ponto vira virgula decimal.
+    normalizado = normalizado.replace(/\.(\d{1,2})$/, ",$1");
+  }
   if (!/^\d+(,\d+)?$/.test(normalizado)) return undefined;
   const centavos = Math.round(parseFloat(normalizado.replace(",", ".")) * 100);
   if (isNaN(centavos) || centavos <= 0 || centavos > MAX_CENTAVOS)

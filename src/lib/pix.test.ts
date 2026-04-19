@@ -188,9 +188,24 @@ describe("parseValorUrl", () => {
     expect(parseValorUrl("abc")).toBeUndefined();
   });
 
-  it("rejeita ponto isolado (sem 1 ou 2 digitos no final)", () => {
-    expect(parseValorUrl("50.000")).toBeUndefined();
+  it("aceita ponto como separador de milhar (grupos de 3 digitos)", () => {
+    expect(parseValorUrl("50.000")).toBe(5000000);
+    expect(parseValorUrl("1.000")).toBe(100000);
+    expect(parseValorUrl("1.000.000")).toBe(100000000);
+    expect(parseValorUrl("50.000,00")).toBe(5000000);
+    expect(parseValorUrl("1.234.567,89")).toBe(123456789);
+  });
+
+  it("com multiplos pontos, trata todos como milhar mesmo se malformado", () => {
+    expect(parseValorUrl("5.000.00")).toBe(50000000);
+    expect(parseValorUrl("5.000.000")).toBe(500000000);
+  });
+
+  it("rejeita ponto isolado ou em posicao invalida", () => {
     expect(parseValorUrl("50.")).toBeUndefined();
+    expect(parseValorUrl("50.0000")).toBeUndefined();
+    expect(parseValorUrl("1.00")).toBe(100); // ponto com 2 digitos = decimal
+    expect(parseValorUrl(".000")).toBeUndefined();
   });
 
   it("rejeita valor zero ou vazio", () => {
