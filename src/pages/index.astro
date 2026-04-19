@@ -65,8 +65,20 @@ import "../styles/global.css";
                 <code class="text-xs text-emerald-700">05286882781</code>
               </li>
               <li class="text-sm text-gray-500">
+                <strong class="font-medium text-gray-700">CNPJ</strong> —
+                <code class="text-xs text-emerald-700">12.345.678/0001-95</code> ou
+                <code class="text-xs text-emerald-700">12345678000195</code>
+              </li>
+              <li class="text-sm text-gray-500">
                 <strong class="font-medium text-gray-700">E-mail</strong> —
                 <code class="text-xs text-emerald-700">jose@peleteiro.net</code>
+              </li>
+              <li class="text-sm text-gray-500">
+                <strong class="font-medium text-gray-700">Chave aleatoria</strong>
+                — UUID com ou sem hifens:
+                <code class="text-xs text-emerald-700">
+                  123e4567-e89b-12d3-a456-426614174000
+                </code>
               </li>
             </ul>
           </div>
@@ -103,7 +115,7 @@ import "../styles/global.css";
             <p class="mt-1 text-sm leading-relaxed text-gray-500">
               Adicione <code class="text-xs text-emerald-700">.png</code> ao
               final do valor para receber apenas a imagem do QR Code em PNG
-              (512x512). Util para embedar em e-mails, mensagens ou documentos.
+              (1024x1024). Util para embedar em e-mails, mensagens ou documentos.
             </p>
           </div>
         </div>
@@ -124,6 +136,18 @@ import "../styles/global.css";
             class="block rounded-lg bg-gray-50 px-4 py-2.5 text-sm text-emerald-700 transition-colors hover:bg-emerald-50"
           >
             /052.868.827-81/1500
+          </a>
+          <a
+            href="/12.345.678%2F0001-95/25000"
+            class="block rounded-lg bg-gray-50 px-4 py-2.5 text-sm text-emerald-700 transition-colors hover:bg-emerald-50"
+          >
+            /12.345.678/0001-95/25000
+          </a>
+          <a
+            href="/123e4567-e89b-12d3-a456-426614174000/5000"
+            class="block rounded-lg bg-gray-50 px-4 py-2.5 text-sm text-emerald-700 transition-colors hover:bg-emerald-50"
+          >
+            /123e4567-e89b-12d3-a456-426614174000/5000
           </a>
           <a
             href="/jose@peleteiro.net/10000?d=Consultoria"

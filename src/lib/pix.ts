@@ -5,7 +5,7 @@
 
 // --- Tipos de chave ---
 
-type TipoChave = "telefone" | "cpf" | "cnpj" | "email";
+type TipoChave = "telefone" | "cpf" | "cnpj" | "email" | "aleatoria";
 
 export interface ChavePix {
   tipo: TipoChave;
@@ -16,17 +16,44 @@ export interface ChavePix {
   label: string;
 }
 
+// Chave aleatória: UUID v4 (36 chars com hifens ou 32 hex sem hifens).
+const UUID_REGEX =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
+const HEX32_REGEX = /^[0-9a-f]{32}$/;
+
 /**
  * Parseia a chave PIX da URL e retorna a chave normalizada + display.
  *
- * Estratégia: se contém "@" é e-mail. Caso contrário, extrai só os dígitos
- * (ignora pontuação, parênteses, espaços, "+") e tenta CPF (11 dígitos),
- * CNPJ (14 dígitos) ou telefone BR (10-13 dígitos, com ou sem DDI 55).
+ * Estratégia: se contém "@" é e-mail. Se bate com o formato UUID é chave
+ * aleatória. Caso contrário, extrai só os dígitos (ignora pontuação,
+ * parênteses, espaços, "+") e tenta CPF (11 dígitos), CNPJ (14 dígitos)
+ * ou telefone BR (10-13 dígitos, com ou sem DDI 55).
  */
 export function parsearChave(raw: string): ChavePix | undefined {
   // E-mail
   if (raw.includes("@")) {
     return { tipo: "email", chave: raw, display: raw, label: "E-mail" };
+  }
+
+  // Chave aleatória — normaliza para lowercase com hifens
+  const normalizada = raw.trim().toLowerCase();
+  if (UUID_REGEX.test(normalizada)) {
+    return {
+      tipo: "aleatoria",
+      chave: normalizada,
+      display: normalizada,
+      label: "Chave aleatoria",
+    };
+  }
+  if (HEX32_REGEX.test(normalizada)) {
+    const h = normalizada;
+    const comHifens = `${h.slice(0, 8)}-${h.slice(8, 12)}-${h.slice(12, 16)}-${h.slice(16, 20)}-${h.slice(20)}`;
+    return {
+      tipo: "aleatoria",
+      chave: comHifens,
+      display: comHifens,
+      label: "Chave aleatoria",
+    };
   }
 
   const digits = raw.replace(/\D/g, "");
