@@ -1,0 +1,14 @@
+---
+import ErrorPage from "@/components/ErrorPage.astro";
+import Base from "@/layouts/Base.astro";
+---
+
+<Base
+  titulo="Erro no servidor — pixlink"
+  descricao="Algo deu errado processando essa requisicao."
+>
+  <ErrorPage
+    titulo="Algo deu errado"
+    mensagem="Erro inesperado no servidor. Tente novamente em instantes ou volte para a home."
+  />
+</Base>
