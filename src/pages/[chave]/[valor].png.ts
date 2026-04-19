@@ -30,7 +30,8 @@ export const GET: APIRoute = async ({ params, url }) => {
     fitTo: { mode: "width", value: 1024 },
     shapeRendering: 1, // crispEdges
   });
-  const png = resvg.render().asPng();
+  // resvg-wasm retorna Uint8Array<ArrayBufferLike>; Response exige ArrayBuffer.
+  const png = resvg.render().asPng().buffer as ArrayBuffer;
 
   return new Response(png, {
     headers: {
