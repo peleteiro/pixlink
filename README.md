@@ -57,6 +57,12 @@ Adicione `.png` ao valor para receber apenas a imagem do QR Code (1024x1024):
 /21992446550/5000.png
 ```
 
+### Previews em redes sociais
+
+A página do PIX inclui meta tags Open Graph e Twitter Card, então ao
+colar o link no WhatsApp, Telegram, Slack, etc. o preview mostra o QR
+Code (via endpoint `.png`), o valor e a chave.
+
 ## Exemplos
 
 | URL                                          | Resultado                              |
