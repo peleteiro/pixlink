@@ -68,7 +68,7 @@ O payload segue a especificacao EMV QR Code do Banco Central:
 ## Fluxos de Trabalho
 
 ```bash
-pnpm install       # Dependencias
+pnpm install       # Dependencias + instala git hooks (lefthook)
 tilt up            # Servidor dev (porta 3000)
 mise run lint      # Correcao automatica (prettier + astro check)
 mise run test      # Roda os testes (vitest)

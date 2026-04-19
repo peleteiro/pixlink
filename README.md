@@ -164,9 +164,17 @@ Imports usam o alias `@/` para `src/` (ex: `@/lib/pix`, `@/layouts/Base.astro`).
 ## Desenvolvimento
 
 ```bash
-pnpm install
+pnpm install     # ja instala os git hooks (lefthook) via `prepare`
 tilt up          # servidor dev na porta 3000
 ```
+
+### Git hooks (lefthook)
+
+Configurados em `lefthook.yml`:
+
+- **pre-commit** — `prettier --write` nos arquivos staged (auto-fix e
+  re-stage) + `vitest run` rapido.
+- **pre-push** — `mise run check` (verificacao completa de CI).
 
 ## Tarefas
 
