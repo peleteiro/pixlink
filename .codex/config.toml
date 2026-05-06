@@ -1,0 +1,4 @@
+personality = "pragmatic"
+commit_attribution = ""
+approval_policy = "on-request"
+sandbox_mode = "workspace-write"

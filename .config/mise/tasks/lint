@@ -1,0 +1,13 @@
+#!/usr/bin/env bash
+#MISE description="Executa lint completo com fix (format + types)"
+#MISE dir="{{config_root}}"
+
+set -euo pipefail
+
+echo "Executando lint completo..."
+
+pnpm astro sync
+pnpm prettier --list-different --write .
+pnpm astro check --minimum-severity warning
+
+echo "Lint completo!"

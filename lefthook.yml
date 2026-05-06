@@ -1,0 +1,22 @@
+# Git hooks gerenciados pelo Lefthook.
+# Instalar apos clonar: `lefthook install` (ou `mise exec -- lefthook install`).
+
+pre-commit:
+  parallel: true
+  jobs:
+    - name: prettier
+      # Formata os arquivos staged e re-adiciona as mudancas ao commit.
+      glob: "*.{ts,tsx,astro,js,mjs,json,md,css,yml,yaml}"
+      run: pnpm prettier --write {staged_files}
+      stage_fixed: true
+
+    - name: vitest
+      # Testes sao rapidos (~500ms), roda tudo em qualquer mudanca de codigo.
+      glob: "*.{ts,tsx,astro}"
+      run: pnpm vitest run --silent
+
+pre-push:
+  jobs:
+    - name: check
+      # Verificacao completa antes de publicar (prettier + astro check + vitest).
+      run: mise run check

@@ -1,0 +1,26 @@
+#!/usr/bin/env bash
+#MISE description="Limpa arquivos gerados (git clean -fdX)"
+#MISE dir="{{config_root}}"
+
+set -euo pipefail
+
+echo "Limpando arquivos gerados..."
+
+exclusions=()
+
+# Preserva arquivos que tem versão .example ou .sample
+while IFS= read -r file; do
+    target="${file%.*}"
+    exclusions+=("-e" "!$target")
+done < <(git ls-files | grep -E '\.(example|sample)$')
+
+git clean -fdX "${exclusions[@]}" .
+
+echo ""
+echo "Limpeza concluída!"
+echo ""
+echo "Arquivos preservados:"
+echo "  .example e .sample"
+echo ""
+echo "Para restaurar o ambiente:"
+echo "   pnpm install"

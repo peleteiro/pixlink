@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+# Adiciona e commita arquivos do diretório especificado ou da raiz do projeto
+# Se receber um path como argumento, executa nele; caso contrário, na raiz do repositório
+
+set -euo pipefail
+
+# Descobre a raiz do repositório Git
+repo_root=$(git rev-parse --show-toplevel)
+
+# Se recebeu um path como argumento, usa ele; caso contrário, usa a raiz do repo
+target_dir="${1:-$repo_root}"
+
+cd "$target_dir"
+
+git add .
+git commit

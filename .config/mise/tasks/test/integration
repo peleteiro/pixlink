@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+#MISE description="Roda os testes de integracao"
+#MISE dir="{{config_root}}"
+
+set -euo pipefail
+
+pnpm vitest run test/integration

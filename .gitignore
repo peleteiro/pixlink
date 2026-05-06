@@ -1,0 +1,11 @@
+dist/
+node_modules/
+.astro/
+.env
+mise.local.toml
+.claude/settings.local.json
+*.log
+.DS_Store
+.wrangler/
+**/.terraform/
+**/.terraform.lock.hcl

@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+#MISE description="Atualiza ferramentas e dependências"
+#MISE dir="{{config_root}}"
+
+set -euo pipefail
+
+mise run upgrade:tools
+mise run upgrade:deps
+mise run tofu:upgrade

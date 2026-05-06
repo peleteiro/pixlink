@@ -1,0 +1,44 @@
+---
+import ErrorPage from "@/components/ErrorPage.astro";
+import PixCalculator from "@/components/PixCalculator";
+import Base from "@/layouts/Base.astro";
+import { parsearChave } from "@/lib/pix";
+
+const { chave: chaveRaw } = Astro.params;
+const parsed = chaveRaw ? parsearChave(chaveRaw) : undefined;
+
+if (!parsed) {
+  Astro.response.status = 400;
+}
+
+const canonical = parsed
+  ? `${Astro.url.origin}/${encodeURIComponent(parsed.chave)}`
+  : undefined;
+---
+
+{
+  !parsed ? (
+    <Base
+      titulo="Chave invalida — pixlink"
+      descricao="A chave PIX informada na URL nao e valida."
+    >
+      <ErrorPage
+        titulo="Chave invalida"
+        mensagem="A chave PIX informada na URL nao e valida. Verifique o formato e tente novamente."
+      />
+    </Base>
+  ) : (
+    <Base
+      titulo={`PIX para ${parsed.display}`}
+      descricao={`Calcule o valor e pague via PIX para ${parsed.label}: ${parsed.display}.`}
+      canonical={canonical}
+    >
+      <PixCalculator
+        chave={parsed.chave}
+        label={parsed.label}
+        display={parsed.display}
+        client:only="react"
+      />
+    </Base>
+  )
+}
