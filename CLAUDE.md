@@ -35,25 +35,27 @@ Valor usa `,` para separar centavos. Regras completas no `README.md`.
 
 ### Mapa do Projeto
 
-| Caminho                                     | Proposito                                            |
-| :------------------------------------------ | :--------------------------------------------------- |
-| `src/pages/index.astro`                     | Home com form de geracao de link                     |
-| `src/pages/[chave]/[valor].astro`           | Pagina do PIX — renderiza QR Code                    |
-| `src/pages/[chave]/[valor].png.ts`          | Endpoint que serve o QR Code em PNG (1024x1024)      |
-| `src/pages/[chave1]/[chave2]/[valor].astro` | Redirect pra CNPJ com `/` na URL                     |
-| `src/pages/valor.test.ts`                   | Testes de integracao da pagina (AstroContainer)      |
-| `src/layouts/Base.astro`                    | Shell compartilhado: head, meta tags, GA, body       |
-| `src/lib/pix/chave.ts`                      | Parse/validacao de chave (CPF, CNPJ, UUID, email)    |
-| `src/lib/pix/valor.ts`                      | Parse/format de valor, `MAX_CENTAVOS`                |
-| `src/lib/pix/payload.ts`                    | Payload EMV + TLV + CRC16 + `sanitizarDescricao`     |
-| `src/lib/pix/qrcode.ts`                     | Geracao do SVG do QR Code                            |
-| `src/lib/pix/index.ts`                      | Barrel + `montarDadosPix` (orquestracao)             |
-| `src/components/`                           | UI — PixForm, CopyButton, ShareButton, ErrorPage     |
-| `src/styles/global.css`                     | Tailwind 4 + utilities `.btn-primary/.btn-secondary` |
-| `public/`                                   | favicon.svg, robots.txt                              |
-| `.github/workflows/ci.yml`                  | CI — roda `mise run check` em push/PR                |
-| `sysadmin/tofu/`                            | Infraestrutura (DNS pix.peleteiro.net)               |
-| `.config/mise/tasks/`                       | Scripts de tarefas                                   |
+| Caminho                                     | Proposito                                               |
+| :------------------------------------------ | :------------------------------------------------------ |
+| `src/pages/index.astro`                     | Home com form de geracao de link                        |
+| `src/pages/[chave]/index.astro`             | PIX copia e cola + calculadora (chave so)               |
+| `src/pages/[chave]/[valor].astro`           | Pagina do PIX — renderiza QR Code                       |
+| `src/pages/[chave]/[valor].png.ts`          | Endpoint que serve o QR Code em PNG (1024x1024)         |
+| `src/pages/[chave1]/[chave2]/[valor].astro` | Redirect pra CNPJ com `/` na URL                        |
+| `test/integration/`                         | Testes de integracao via AstroContainer                 |
+| `src/layouts/Base.astro`                    | Shell compartilhado: head, meta tags, GA, body          |
+| `src/lib/pix/chave.ts`                      | Parse/validacao de chave (CPF, CNPJ, UUID, email)       |
+| `src/lib/pix/valor.ts`                      | Parse/format de valor, `MAX_CENTAVOS`                   |
+| `src/lib/pix/payload.ts`                    | EMV TLV + CRC16, `gerarPayloadPix`, `parsearPayloadPix` |
+| `src/lib/pix/qrcode.ts`                     | Geracao do SVG do QR Code                               |
+| `src/lib/pix/index.ts`                      | Barrel + `montarDadosPix` (orquestracao)                |
+| `src/components/PixPage.astro`              | Template compartilhado da pagina do QR Code             |
+| `src/components/`                           | UI — PixForm, CopyButton, ShareButton, ErrorPage        |
+| `src/styles/global.css`                     | Tailwind 4 + utilities `.btn-primary/.btn-secondary`    |
+| `public/`                                   | favicon.svg, robots.txt                                 |
+| `.github/workflows/ci.yml`                  | CI — roda `mise run check` em push/PR                   |
+| `sysadmin/tofu/`                            | Infraestrutura (DNS pix.peleteiro.net)                  |
+| `.config/mise/tasks/`                       | Scripts de tarefas                                      |
 
 Imports usam o alias `@/` para `src/` (`@/lib/pix`, `@/layouts/Base.astro`).
 
@@ -64,6 +66,11 @@ O payload segue a especificacao EMV QR Code do Banco Central:
 - Formato TLV (Tag-Length-Value)
 - CRC16-CCITT para checksum
 - Suporta chaves: telefone, CPF, CNPJ, e-mail, chave aleatoria
+
+A URL aceita tanto a forma curta `/{chave}/{valor}` (regera o payload
+do zero) quanto o payload EMV inteiro como path unico `/{payload}` —
+neste caso o QR Code preserva o payload original com txid e merchant
+name. Detalhes no `README.md`.
 
 ## Fluxos de Trabalho
 

@@ -53,6 +53,28 @@ canônica com os dois segmentos unidos:
 Assim o usuário pode colar o CNPJ formatado direto na URL sem precisar
 escapar o `/` como `%2F`.
 
+### PIX copia e cola
+
+Também aceita o payload EMV inteiro (o "copia e cola" gerado por apps
+de banco e marketplaces) como path único:
+
+```
+/{payload-emv-completo}
+```
+
+O parser valida o CRC16 e confere o GUI `br.gov.bcb.pix` antes de
+aceitar. Se o payload traz valor (campo 54), a página renderiza direto
+naquele caminho preservando o **payload original** no QR Code e no
+botão copiar — isso mantém o `txid` (campo 62.05) e o merchant name
+intactos, essenciais para marketplaces como Mercado Pago reconciliarem
+o pagamento com o pedido específico. Sem valor (`valor a definir`), faz
+redirect 301 para `/{chave}` e cai na calculadora.
+
+Atalho: regerar o QR a partir de `/{chave}/{valor}` produz um QR
+funcionalmente equivalente para envio avulso, mas perde o `txid` — use
+o payload completo quando o pagamento precisa estar amarrado a uma
+transação específica.
+
 ### Valor
 
 O valor usa **`,` como separador de centavos**. Ambos os formatos sao
@@ -156,16 +178,19 @@ Code (via endpoint `.png`), o valor e a chave.
 | `/123e4567-e89b-12d3-a456-426614174000/50` | QR Code para chave aleatoria, R$ 50,00 |
 | `/joana@example.com/100?d=Consultoria`     | QR Code com descricao                  |
 | `/11912345678/50,00.png`                   | Imagem PNG do QR Code                  |
+| `/00020126...DA46`                         | Renderiza o payload "copia e cola"     |
 
 ## Estrutura
 
 ```
 src/
-├── components/     # CopyButton, ShareButton, PixForm (React);
-│                   # ErrorPage, GoogleAnalytics (Astro)
+├── components/     # CopyButton, ShareButton, PixForm, PixCalculator (React);
+│                   # ErrorPage, GoogleAnalytics, PixPage (Astro)
 ├── layouts/        # Base.astro — shell com head/meta/GA
-├── lib/pix/        # dominio: chave, valor, payload EMV, qrcode, montarDadosPix
-├── pages/          # rotas: /, /[chave]/[valor], /[chave]/[valor].png,
+├── lib/pix/        # dominio: chave, valor, payload EMV (gerar + parsear),
+│                   # qrcode, montarDadosPix
+├── pages/          # rotas: /, /[chave] (copia e cola + calculadora),
+│                   # /[chave]/[valor], /[chave]/[valor].png,
 │                   # rota auxiliar /[chave1]/[chave2]/[valor] (CNPJ com barra)
 └── styles/         # global.css (Tailwind 4 + btn utilities)
 public/             # favicon.svg, robots.txt

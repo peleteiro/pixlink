@@ -122,6 +122,24 @@ const canonical = `${Astro.url.origin}/`;
             para embedar em e-mails, mensagens ou documentos.
           </p>
         </div>
+
+        <div class="h-px bg-gray-100"></div>
+
+        <div>
+          <h3 class="text-sm font-semibold text-gray-900">
+            PIX copia e cola <span class="font-normal text-gray-400"
+              >(atalho)</span
+            >
+          </h3>
+          <p class="mt-1 text-sm leading-relaxed text-gray-500">
+            Cole o payload EMV inteiro como path unico (<code
+              class="text-xs text-emerald-700">/{"{payload}"}</code
+            >) e a pagina renderiza o QR Code preservando o
+            <code class="text-xs text-emerald-700">txid</code> e o merchant name originais.
+            Util pra repassar um pagamento de marketplace mantendo a associacao com
+            o pedido.
+          </p>
+        </div>
       </div>
 
       {/* Exemplos */}
