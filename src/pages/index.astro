@@ -134,10 +134,14 @@ const canonical = `${Astro.url.origin}/`;
           <p class="mt-1 text-sm leading-relaxed text-gray-500">
             Cole o payload EMV inteiro como path unico (<code
               class="text-xs text-emerald-700">/{"{payload}"}</code
-            >) e a pagina renderiza o QR Code preservando o
-            <code class="text-xs text-emerald-700">txid</code> e o merchant name originais.
-            Util pra repassar um pagamento de marketplace mantendo a associacao com
-            o pedido.
+            >, com ou sem valor) e a pagina renderiza o QR Code preservando o <code
+              class="text-xs text-emerald-700">txid</code
+            > e o merchant name originais. Util pra repassar um pagamento de marketplace
+            mantendo a associacao com o pedido — a forma curta <code
+              class="text-xs text-emerald-700">/{"{chave}"}/{"{valor}"}</code
+            > regenera o payload e perde o <code
+              class="text-xs text-emerald-700">txid</code
+            >.
           </p>
         </div>
       </div>

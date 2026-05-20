@@ -70,7 +70,12 @@ O payload segue a especificacao EMV QR Code do Banco Central:
 A URL aceita tanto a forma curta `/{chave}/{valor}` (regera o payload
 do zero) quanto o payload EMV inteiro como path unico `/{payload}` —
 neste caso o QR Code preserva o payload original com txid e merchant
-name. Detalhes no `README.md`.
+name, com ou sem valor.
+
+**Invariante**: payload com txid nunca cai pra calculadora. Mesmo sem
+valor no payload (`valor a definir`), renderiza o QR direto e o app do
+banco captura o valor na hora — a calculadora regeraria o payload e
+perderia o txid. Detalhes no `README.md`.
 
 ## Fluxos de Trabalho
 
