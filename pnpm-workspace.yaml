@@ -3,3 +3,26 @@ allowBuilds:
   lefthook: true
   sharp: true
   workerd: true
+minimumReleaseAgeExclude:
+  - "@types/react@19.2.15"
+  - lefthook-darwin-arm64@2.1.8
+  - lefthook-darwin-x64@2.1.8
+  - lefthook-freebsd-arm64@2.1.8
+  - lefthook-freebsd-x64@2.1.8
+  - lefthook-linux-arm64@2.1.8
+  - lefthook-linux-x64@2.1.8
+  - lefthook-openbsd-arm64@2.1.8
+  - lefthook-openbsd-x64@2.1.8
+  - lefthook-windows-arm64@2.1.8
+  - lefthook-windows-x64@2.1.8
+  - lefthook@2.1.8
+  - miniflare@4.20260518.0
+  - wrangler@4.93.0
+  - "@vitest/expect@4.1.7"
+  - "@vitest/mocker@4.1.7"
+  - "@vitest/pretty-format@4.1.7"
+  - "@vitest/runner@4.1.7"
+  - "@vitest/snapshot@4.1.7"
+  - "@vitest/spy@4.1.7"
+  - "@vitest/utils@4.1.7"
+  - vitest@4.1.7

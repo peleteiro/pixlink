@@ -9,7 +9,7 @@ NODE_ENV = 'development'
 
 [tools]
 node = "24"
-"npm:pnpm" = "10"
+"npm:pnpm" = "11"
 opentofu = "1"
 claude = "latest"
 codex = "latest"

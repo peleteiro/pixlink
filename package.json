@@ -8,12 +8,12 @@
   },
   "dependencies": {
     "@astrojs/check": "^0.9.9",
-    "@astrojs/cloudflare": "^13.5.0",
+    "@astrojs/cloudflare": "^13.5.2",
     "@astrojs/compiler": "^4.0.0",
-    "@astrojs/react": "^5.0.4",
+    "@astrojs/react": "^5.0.5",
     "@resvg/resvg-wasm": "^2.6.2",
     "@tailwindcss/vite": "^4.3.0",
-    "astro": "^6.3.1",
+    "astro": "^6.3.5",
     "qrcode-svg": "^1.1.0",
     "react": "^19.2.6",
     "react-dom": "^19.2.6",
@@ -22,13 +22,13 @@
     "unstorage": "^1.17.5"
   },
   "devDependencies": {
-    "@types/react": "^19.2.14",
+    "@types/react": "^19.2.15",
     "@types/react-dom": "^19.2.3",
-    "lefthook": "^2.1.6",
+    "lefthook": "^2.1.8",
     "prettier": "^3.8.3",
     "prettier-plugin-astro": "^0.14.1",
     "prettier-plugin-tailwindcss": "^0.8.0",
-    "vitest": "^4.1.6",
-    "wrangler": "^4.90.1"
+    "vitest": "^4.1.7",
+    "wrangler": "^4.93.0"
   }
 }
