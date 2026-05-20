@@ -19,12 +19,16 @@ export interface DadosPix {
   payload: string;
   /** SVG do QR Code ja pronto pra injetar. */
   svg: string;
-  /** Valor em BRL formatado: "R$ 50,00". */
-  valorFormatado: string;
-  /** URL canonica (sem UTMs e outros params nao-significativos). */
-  canonicalUrl: string;
-  /** URL da rota .png (mesma canonicalizacao). */
-  imagemUrl: string;
+  /** Valor em BRL formatado ("R$ 50,00"). Ausente em payloads "valor a definir". */
+  valorFormatado?: string;
+  /**
+   * URL canonica curta. Ausente em payloads "copia e cola" (sem valor ou com
+   * valor + txid) — esses vivem apenas na URL longa pra nao induzir crawlers
+   * a indexar uma forma curta que regeraria o payload e perderia o txid.
+   */
+  canonicalUrl?: string;
+  /** URL da rota .png (mesma canonicalizacao). Ausente quando nao ha forma curta. */
+  imagemUrl?: string;
   /** Titulo curto pro <title>. */
   titulo: string;
   /** Descricao curta pra meta description / OG. */
@@ -36,34 +40,55 @@ export interface DadosPix {
 }
 
 /**
- * Monta todos os dados derivados usados na pagina do PIX:
- * payload, SVG, URL canonica (descarta UTMs), meta tags de preview.
+ * Monta todos os dados derivados usados na pagina do PIX: payload, SVG,
+ * URL canonica (descarta UTMs), meta tags de preview.
  *
- * So a descricao participa do conteudo do QR Code, entao so ela entra
- * na canonical query — o resto e ruido de tracking.
+ * Quando o pagador colou um "PIX copia e cola", o payload original
+ * (`payloadOriginal`) e preservado no QR Code e no botao copiar — o
+ * gerarPayloadPix nao reproduz txid, merchant name e city, campos que
+ * marketplaces usam pra reconciliar o pagamento com o pedido.
+ *
+ * Se `payloadOriginal` esta presente, a URL canonica curta e omitida
+ * mesmo havendo valor — a forma curta perderia o txid e nao queremos
+ * que crawlers/sharers a usem como alternativa. Sem `payloadOriginal`
+ * e sem `centavos` nao ha o que montar.
  */
 export function montarDadosPix(
   parsed: ChavePix,
-  centavos: number,
+  centavos: number | undefined,
   origin: string,
   descricao?: string,
   payloadOriginal?: string,
 ): DadosPix {
-  // Quando o pagador colou um "PIX copia e cola", preserva o payload inteiro
-  // no QR Code e no botao copiar. O gerarPayloadPix nao reproduz txid,
-  // merchant name e city — campos que marketplaces (Mercado Pago etc.) usam
-  // pra reconciliar o pagamento com o pedido especifico.
+  if (centavos === undefined && payloadOriginal === undefined) {
+    throw new Error("montarDadosPix: precisa de centavos ou payloadOriginal");
+  }
+
   const payload =
-    payloadOriginal ?? gerarPayloadPix(parsed.chave, centavos, descricao);
+    payloadOriginal ?? gerarPayloadPix(parsed.chave, centavos!, descricao);
   const svg = gerarSvg(payload);
-  const valorFormatado = formatValor(centavos);
+  const valorFormatado =
+    centavos !== undefined ? formatValor(centavos) : undefined;
 
+  // Forma curta so existe quando NAO ha payload original (caso contrario a
+  // forma curta regeraria o payload e perderia txid/merchant).
   const canonicalQuery = descricao ? `?d=${encodeURIComponent(descricao)}` : "";
-  const canonicalPath = `/${encodeURIComponent(parsed.chave)}/${centavosParaUrl(centavos)}`;
-  const canonicalUrl = `${origin}${canonicalPath}${canonicalQuery}`;
-  const imagemUrl = `${origin}${canonicalPath}.png${canonicalQuery}`;
+  const canonicalPath =
+    centavos !== undefined
+      ? `/${encodeURIComponent(parsed.chave)}/${centavosParaUrl(centavos)}`
+      : undefined;
+  const canonicalUrl =
+    !payloadOriginal && canonicalPath
+      ? `${origin}${canonicalPath}${canonicalQuery}`
+      : undefined;
+  const imagemUrl =
+    !payloadOriginal && canonicalPath
+      ? `${origin}${canonicalPath}.png${canonicalQuery}`
+      : undefined;
 
-  const titulo = `PIX ${valorFormatado}`;
+  const titulo = valorFormatado
+    ? `PIX ${valorFormatado}`
+    : `PIX para ${parsed.display}`;
   const resumo = descricao
     ? `${parsed.label}: ${parsed.display} — ${descricao}`
     : `${parsed.label}: ${parsed.display}`;

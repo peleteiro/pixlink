@@ -10,6 +10,14 @@ interface Props {
 }
 
 const { dados, descricao } = Astro.props;
+
+// Em payloads "copia e cola" preservados (com ou sem valor), a forma
+// curta nao existe — o share/aria caem na URL atual (preserva o payload
+// original com txid).
+const shareUrl = dados.canonicalUrl ?? Astro.url.toString();
+const qrAriaLabel = dados.valorFormatado
+  ? `QR Code PIX de ${dados.valorFormatado}`
+  : `QR Code PIX para ${dados.display}`;
 ---
 
 <Base
@@ -17,7 +25,7 @@ const { dados, descricao } = Astro.props;
   descricao={dados.resumo}
   canonical={dados.canonicalUrl}
   ogImage={dados.imagemUrl}
-  ogImageAlt={`QR Code PIX de ${dados.valorFormatado}`}
+  ogImageAlt={qrAriaLabel}
 >
   <div class="w-full max-w-md overflow-hidden rounded-2xl bg-white shadow-lg">
     {/* Header */}
@@ -29,9 +37,17 @@ const { dados, descricao } = Astro.props;
       >
         Pagamento via PIX
       </h1>
-      <div class="text-[40px] font-bold tracking-tight text-white">
-        {dados.valorFormatado}
-      </div>
+      {
+        dados.valorFormatado ? (
+          <div class="text-[40px] font-bold tracking-tight text-white">
+            {dados.valorFormatado}
+          </div>
+        ) : (
+          <div class="text-lg font-semibold tracking-tight text-white/95">
+            Valor a definir no app
+          </div>
+        )
+      }
     </div>
 
     {/* Body */}
@@ -39,7 +55,7 @@ const { dados, descricao } = Astro.props;
       {/* QR Code */}
       <div
         role="img"
-        aria-label={`QR Code PIX de ${dados.valorFormatado}`}
+        aria-label={qrAriaLabel}
         class="mb-6 flex items-center justify-center rounded-2xl border-2 border-gray-200 bg-white p-4 [&>svg]:block [&>svg]:h-auto [&>svg]:w-full"
       >
         <Fragment set:html={dados.svg} />
@@ -70,20 +86,26 @@ const { dados, descricao } = Astro.props;
             </>
           )
         }
-        <div class="h-px bg-gray-100"></div>
-        <div class="flex items-center justify-between px-1">
-          <span class="text-[13px] font-medium text-gray-400">Valor</span>
-          <span class="text-sm font-semibold text-gray-900">
-            {dados.valorFormatado}
-          </span>
-        </div>
+        {
+          dados.valorFormatado && (
+            <>
+              <div class="h-px bg-gray-100" />
+              <div class="flex items-center justify-between px-1">
+                <span class="text-[13px] font-medium text-gray-400">Valor</span>
+                <span class="text-sm font-semibold text-gray-900">
+                  {dados.valorFormatado}
+                </span>
+              </div>
+            </>
+          )
+        }
       </div>
 
       {/* Botoes */}
       <CopyButton payload={dados.payload} client:load />
       <ShareButton
-        url={dados.canonicalUrl}
-        valor={dados.valorFormatado}
+        url={shareUrl}
+        valor={dados.valorFormatado ?? "PIX"}
         client:load
       />
 

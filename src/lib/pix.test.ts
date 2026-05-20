@@ -513,6 +513,50 @@ describe("montarDadosPix", () => {
     expect(dados.payload).toContain("0206Almoco");
   });
 
+  it("nao gera canonical curta quando payload original e preservado", () => {
+    // Quando ha payloadOriginal, a forma curta /{chave}/{valor} levaria a
+    // um payload regenerado sem txid — entao a pagina nao deve oferecer
+    // uma URL canonica curta nem PNG curto (que apontariam pra essa forma
+    // lossy).
+    const original =
+      "00020126540014br.gov.bcb.pix0132pix_marketplace@mercadolibre.com5204000053039865406792.695802BR5911@34117387556009Sao Paulo62250521mpqrinter1592000744436304DA46";
+    const email = parsearChave("pix_marketplace@mercadolibre.com")!;
+    const dados = montarDadosPix(
+      email,
+      79269,
+      "https://pix.peleteiro.net",
+      undefined,
+      original,
+    );
+    expect(dados.canonicalUrl).toBeUndefined();
+    expect(dados.imagemUrl).toBeUndefined();
+  });
+
+  it("monta dados sem valor quando payload e 'valor a definir'", () => {
+    // Payload sem campo 54 (valor a definir). Renderizamos o QR direto
+    // — NUNCA caimos pra calculadora porque ela perderia o txid.
+    const semValor =
+      "00020126540014br.gov.bcb.pix0132pix_marketplace@mercadolibre.com5204000053039865802BR5911@34117387556009Sao Paulo62250521mpqrinter159200074443630417EF";
+    const email = parsearChave("pix_marketplace@mercadolibre.com")!;
+    const dados = montarDadosPix(
+      email,
+      undefined,
+      "https://pix.peleteiro.net",
+      undefined,
+      semValor,
+    );
+    expect(dados.payload).toBe(semValor);
+    expect(dados.valorFormatado).toBeUndefined();
+    expect(dados.canonicalUrl).toBeUndefined();
+    expect(dados.imagemUrl).toBeUndefined();
+    expect(dados.titulo).toBe("PIX para pix_marketplace@mercadolibre.com");
+  });
+
+  it("lanca erro se chamada sem centavos e sem payloadOriginal", () => {
+    const email = parsearChave("joana@example.com")!;
+    expect(() => montarDadosPix(email, undefined, "https://x.com")).toThrow();
+  });
+
   it("preserva o payload original quando fornecido (PIX copia e cola)", () => {
     // Caso marketplace: o payload colado tem txid e merchant name proprios
     // que o gerarPayloadPix nao reproduz. Quando passamos o payload

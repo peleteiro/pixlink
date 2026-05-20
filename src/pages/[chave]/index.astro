@@ -14,20 +14,15 @@ const { chave: chaveRaw } = Astro.params;
 
 // "PIX copia e cola": se o segmento e o payload EMV inteiro, renderiza o
 // QR Code do PROPRIO payload — preservando txid/merchant name/city que
-// marketplaces (Mercado Pago etc.) usam pra reconciliar. Sem valor (campo
-// 54 ausente, "valor a definir"), cai pra calculadora na forma canonica.
+// marketplaces (Mercado Pago etc.) usam pra reconciliar. NUNCA redireciona
+// pra calculadora, mesmo sem valor: a calculadora regeraria o payload e
+// perderia o txid. Sem valor, a pagina mostra o QR como "valor a definir"
+// pro app do banco capturar o valor na hora de pagar.
 let dadosPayload: DadosPix | undefined;
 let descricaoPayload: string | undefined;
 if (chaveRaw) {
   const payload = parsearPayloadPix(chaveRaw);
   if (payload) {
-    if (payload.valorCentavos === undefined) {
-      const chaveEnc = encodeURIComponent(payload.chave);
-      const desc = payload.descricao
-        ? `?d=${encodeURIComponent(payload.descricao)}`
-        : "";
-      return Astro.redirect(`/${chaveEnc}${desc}`, 301);
-    }
     const parsedChave = parsearChave(payload.chave);
     if (parsedChave) {
       dadosPayload = montarDadosPix(

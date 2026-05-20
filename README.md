@@ -63,17 +63,25 @@ de banco e marketplaces) como path único:
 ```
 
 O parser valida o CRC16 e confere o GUI `br.gov.bcb.pix` antes de
-aceitar. Se o payload traz valor (campo 54), a página renderiza direto
-naquele caminho preservando o **payload original** no QR Code e no
-botão copiar — isso mantém o `txid` (campo 62.05) e o merchant name
-intactos, essenciais para marketplaces como Mercado Pago reconciliarem
-o pagamento com o pedido específico. Sem valor (`valor a definir`), faz
-redirect 301 para `/{chave}` e cai na calculadora.
+aceitar. A página renderiza direto naquele caminho preservando o
+**payload original** no QR Code e no botão copiar — isso mantém o
+`txid` (campo 62.05), o merchant name e a cidade intactos, essenciais
+para marketplaces como Mercado Pago reconciliarem o pagamento com o
+pedido específico.
 
-Atalho: regerar o QR a partir de `/{chave}/{valor}` produz um QR
-funcionalmente equivalente para envio avulso, mas perde o `txid` — use
-o payload completo quando o pagamento precisa estar amarrado a uma
-transação específica.
+Sem valor (`valor a definir`) a página também renderiza direto, com
+"Valor a definir no app" no lugar do total — o pagador escolhe o valor
+no app do banco na hora de pagar. Importante: **nunca caímos pra
+calculadora** nesse caso, mesmo que pareça "completar" o pagamento. A
+calculadora regeraria o payload do zero e perderia o txid — pior do
+que não suportar o caso. Pagamento com txid preserva txid; ponto.
+
+A forma curta `/{chave}/{valor}` continua disponível e útil pra envio
+avulso, mas o QR gerado por ela perde o `txid` (regenera tudo). Use o
+payload completo quando o pagamento precisa estar amarrado a uma
+transação específica. Páginas servidas a partir do payload completo
+não declaram `<link rel="canonical">` curto justamente pra não induzir
+crawlers a indexar a forma lossy.
 
 ### Valor
 
