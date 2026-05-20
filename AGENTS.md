@@ -87,6 +87,19 @@ deve confiar nesses parsers ou repetir o padrao. Caveat conhecido: a
 combinacao `%24%20` (`$` + espaco) e bloqueada no nivel de routing
 (Vite dev + adapter Cloudflare) antes de chegar no app.
 
+### SEO: canonical + robots.txt
+
+Estrategia deliberada: `robots.txt` libera tudo e **toda pagina dedupe
+pra home via `<link rel="canonical">`**. O `Base.astro` ja seta esse
+default — nao passe `canonical` explicito em paginas novas. URLs com
+chave/valor/payload sao **input** pro servico, nao paginas indexaveis
+por si so; crawlers consolidam tudo na home (`/`).
+
+`og:url` fica desacoplado do canonical (default = URL atual da pagina)
+pra que previews de WhatsApp/Telegram apontem pra URL especifica que
+foi compartilhada — o usuario que clica no preview cai no QR Code, nao
+na home. Use o prop `ogUrl` no `Base.astro` so se precisar override.
+
 ## Fluxos de Trabalho
 
 ```bash

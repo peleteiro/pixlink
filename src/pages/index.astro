@@ -1,14 +1,11 @@
 ---
 import PixForm from "@/components/PixForm";
 import Base from "@/layouts/Base.astro";
-
-const canonical = `${Astro.url.origin}/`;
 ---
 
 <Base
   titulo="PIX QR Code Generator — pix.peleteiro.net"
   descricao="Gere um link que exibe um QR Code PIX de pagamento. Cole o link onde quiser — nada e salvo em servidor, os dados ficam na propria URL."
-  canonical={canonical}
 >
   <div class="w-full max-w-lg">
     <div class="overflow-hidden rounded-2xl bg-white shadow-lg">

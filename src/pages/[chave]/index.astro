@@ -42,10 +42,6 @@ const parsed = !dadosPayload && chaveRaw ? parsearChave(chaveRaw) : undefined;
 if (!dadosPayload && !parsed) {
   Astro.response.status = 400;
 }
-
-const canonical = parsed
-  ? `${Astro.url.origin}/${encodeURIComponent(parsed.chave)}`
-  : undefined;
 ---
 
 {
@@ -65,7 +61,6 @@ const canonical = parsed
     <Base
       titulo={`PIX para ${parsed.display}`}
       descricao={`Calcule o valor e pague via PIX para ${parsed.label}: ${parsed.display}.`}
-      canonical={canonical}
     >
       <PixCalculator
         chave={parsed.chave}

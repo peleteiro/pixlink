@@ -5,13 +5,33 @@ import "@/styles/global.css";
 interface Props {
   titulo: string;
   descricao?: string;
+  /**
+   * URL canonica em `<link rel="canonical">`. Default: home. Toda pagina
+   * derivada de dados na URL (chave/valor/payload) consolida na home —
+   * URLs com dados de transacao nao formam paginas indexaveis por si so,
+   * sao apenas variacoes de input pro mesmo servico.
+   */
   canonical?: string;
+  /**
+   * URL em `og:url`/`twitter:url`. Default: a URL atual da pagina. Fica
+   * desacoplada do `canonical` (que sempre dedupe pra home) pra que
+   * previews de WhatsApp/Telegram apontem pra URL especifica que foi
+   * compartilhada — clicar no preview leva pro QR Code, nao pra home.
+   */
+  ogUrl?: string;
   /** Imagem Open Graph (absoluta). Omitir se nao houver preview. */
   ogImage?: string;
   ogImageAlt?: string;
 }
 
-const { titulo, descricao, canonical, ogImage, ogImageAlt } = Astro.props;
+const {
+  titulo,
+  descricao,
+  canonical = `${Astro.url.origin}/`,
+  ogUrl = Astro.url.toString(),
+  ogImage,
+  ogImageAlt,
+} = Astro.props;
 ---
 
 <html lang="pt-BR">
@@ -20,7 +40,7 @@ const { titulo, descricao, canonical, ogImage, ogImageAlt } = Astro.props;
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{titulo}</title>
     {descricao && <meta name="description" content={descricao} />}
-    {canonical && <link rel="canonical" href={canonical} />}
+    <link rel="canonical" href={canonical} />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
 
     {/* Open Graph (WhatsApp, Telegram, Facebook, LinkedIn) */}
@@ -28,7 +48,7 @@ const { titulo, descricao, canonical, ogImage, ogImageAlt } = Astro.props;
     <meta property="og:site_name" content="pixlink" />
     <meta property="og:title" content={titulo} />
     {descricao && <meta property="og:description" content={descricao} />}
-    {canonical && <meta property="og:url" content={canonical} />}
+    <meta property="og:url" content={ogUrl} />
     {
       ogImage && (
         <>

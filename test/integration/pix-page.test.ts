@@ -36,28 +36,32 @@ describe("integracao: pagina /[chave]/[valor]", () => {
     expect(html).toContain("+55 (11) 91234-5678");
   });
 
-  it("canonical aponta para o formato /{chave}/{reais,centavos}", async () => {
+  it("canonical sempre aponta para a home (dedupe SEO)", async () => {
+    // Toda pagina derivada de dados na URL consolida na home pra que
+    // crawlers indexem apenas o servico (/) — URLs com chave/valor sao
+    // input, nao paginas indexaveis por si so.
     const res = await render(
       { chave: "11912345678", valor: "50" },
       "https://pix.peleteiro.net/11912345678/50?utm_source=x",
     );
     const html = await res.text();
     expect(html).toContain(
-      '<link rel="canonical" href="https://pix.peleteiro.net/%2B5511912345678/50,00">',
+      '<link rel="canonical" href="https://pix.peleteiro.net/">',
     );
-    expect(html).not.toContain("utm_source");
   });
 
-  it("canonical inclui ?d= quando ha descricao", async () => {
+  it("og:url reflete a URL real da pagina (preview compartilhado correto)", async () => {
+    // og:url e desacoplado do canonical — apontaria pra home (que
+    // canonicaliza tudo). Para preview de WhatsApp/Telegram queremos a
+    // URL especifica que foi compartilhada, nao a home.
     const res = await render(
       { chave: "11912345678", valor: "50,00" },
-      "https://pix.peleteiro.net/11912345678/50,00?d=Almoco&utm_source=x",
+      "https://pix.peleteiro.net/11912345678/50,00?d=Almoco",
     );
     const html = await res.text();
     expect(html).toContain(
-      'canonical" href="https://pix.peleteiro.net/%2B5511912345678/50,00?d=Almoco"',
+      'property="og:url" content="https://pix.peleteiro.net/11912345678/50,00?d=Almoco"',
     );
-    expect(html).not.toContain("utm_source");
   });
 
   it("meta og:image aponta para a rota .png canonica", async () => {
