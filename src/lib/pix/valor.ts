@@ -43,7 +43,19 @@ export function parseValorForm(valorStr: string): number | undefined {
  * dentro do limite seguro.
  */
 export function parseValorUrl(valorStr: string): number | undefined {
-  let normalizado = valorStr;
+  // Astro nao decodifica %XX em Astro.params, entao /R%2410 (R$10 url-encoded)
+  // chega aqui escapado. decodeURIComponent pode lancar URIError em sequencias
+  // malformadas; nesses casos seguimos com a string original.
+  let entrada = valorStr;
+  try {
+    entrada = decodeURIComponent(valorStr);
+  } catch {
+    entrada = valorStr;
+  }
+  // Aceita prefixo R$ ou $ (case-insensitive) com ou sem espaco apos.
+  entrada = entrada.replace(/^r?\$\s*/i, "");
+
+  let normalizado = entrada;
   const pontos = (normalizado.match(/\./g) || []).length;
   if (pontos >= 2) {
     // Multiplos pontos: sao separadores de milhar (pt-BR), mesmo que

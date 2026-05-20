@@ -213,9 +213,29 @@ describe("parseValorUrl", () => {
   });
 
   it("rejeita valor com caracteres nao numericos", () => {
-    expect(parseValorUrl("R$50")).toBeUndefined();
     expect(parseValorUrl("50abc")).toBeUndefined();
     expect(parseValorUrl("abc")).toBeUndefined();
+  });
+
+  it("aceita prefixo R$ ou $ (com ou sem espaco)", () => {
+    expect(parseValorUrl("R$10")).toBe(1000);
+    expect(parseValorUrl("R$ 10")).toBe(1000);
+    expect(parseValorUrl("$10")).toBe(1000);
+    expect(parseValorUrl("$ 10")).toBe(1000);
+    expect(parseValorUrl("R$50,00")).toBe(5000);
+    expect(parseValorUrl("R$ 1.000,50")).toBe(100050);
+    // Case-insensitive
+    expect(parseValorUrl("r$10")).toBe(1000);
+    // So o prefixo — rejeita lixo no meio.
+    expect(parseValorUrl("R$abc")).toBeUndefined();
+    expect(parseValorUrl("R$")).toBeUndefined();
+  });
+
+  it("aceita URL-encoded ($ vira %24)", () => {
+    // Astro nao decodifica %XX em Astro.params, entao $/R$ chegam escapados.
+    expect(parseValorUrl("R%2410")).toBe(1000);
+    expect(parseValorUrl("%2410")).toBe(1000);
+    expect(parseValorUrl("R%24%2010")).toBe(1000); // R$ 10
   });
 
   it("aceita ponto como separador de milhar (grupos de 3 digitos)", () => {
