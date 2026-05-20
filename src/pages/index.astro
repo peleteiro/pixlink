@@ -95,7 +95,13 @@ const canonical = `${Astro.url.origin}/`;
             Em reais, com <code class="text-xs text-emerald-700">,</code>
             separando os centavos. Ex:
             <code class="text-xs text-emerald-700">50,00</code> ou
-            <code class="text-xs text-emerald-700">50</code> = R$ 50,00.
+            <code class="text-xs text-emerald-700">50</code> = R$ 50,00. Prefixo <code
+              class="text-xs text-emerald-700">R$</code
+            > ou
+            <code class="text-xs text-emerald-700">$</code> tambem aceito (<code
+              class="text-xs text-emerald-700">R$50</code
+            >,
+            <code class="text-xs text-emerald-700">$50</code>).
           </p>
         </div>
 
@@ -178,6 +184,12 @@ const canonical = `${Astro.url.origin}/`;
           class="block rounded-lg bg-gray-50 px-4 py-2.5 text-sm text-emerald-700 transition-colors hover:bg-emerald-50"
         >
           /joana@example.com/100?d=Consultoria
+        </a>
+        <a
+          href="/11912345678/R$50"
+          class="block rounded-lg bg-gray-50 px-4 py-2.5 text-sm text-emerald-700 transition-colors hover:bg-emerald-50"
+        >
+          /11912345678/R$50
         </a>
         <a
           href="/11912345678/50,00.png"

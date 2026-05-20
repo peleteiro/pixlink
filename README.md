@@ -97,17 +97,28 @@ com dois digitos:
 | `/0,50`        | 50       | R$ 0,50      |
 | `/0,01`        | 1        | R$ 0,01      |
 | `/50000,00`    | 5000000  | R$ 50.000,00 |
+| `/R$50`        | 5000     | R$ 50,00     |
+| `/$50,00`      | 5000     | R$ 50,00     |
+| `/R$1.000,50`  | 100050   | R$ 1.000,50  |
 
 **Heuristica:** se o valor terminar com `.` + 1 ou 2 digitos (ex:
 `50.00`, `50.5`), tratamos esse ponto como virgula — conveniencia para
 quem cola valores em formato em ingles. `/50.00` equivale a `/50,00` e
 `/50.5` equivale a `/50,50`.
 
+**Prefixo R$ ou $:** opcional, com ou sem espaco apos. `/R$50`,
+`/R$ 50`, `/$50`, `/$ 50` e o equivalente URL-encoded `/R%2450` sao
+todos aceitos e equivalentes a `/50`. Util pra colar o valor exatamente
+como veio de uma planilha ou nota fiscal. _Caveat_: a combinacao
+`%24` (=`$`) + `%20` (=espaco) e bloqueada no nivel de routing pelo
+adapter Cloudflare antes de chegar no app — pra valor com espaco use o
+form da home, ou monte a URL sem espaco (`/R$50`).
+
 Invalidos (retornam HTTP 400 com pagina estilizada):
 
 - Zero ou negativo (`/0`, `/0,00`, `/-50`)
-- Caracteres nao numericos alem de `,` ou do ponto final (`/R$50`,
-  `/50abc`)
+- Caracteres nao numericos alem de `R$`/`$`, `,` ou do ponto final
+  (`/50abc`, `/USD50`)
 - Ponto no meio que nao seja o final com 1-2 digitos (`/50.000`)
 - Valor acima de `Number.MAX_SAFE_INTEGER` centavos (~R$ 90 trilhoes) —
   acima disso o parseFloat perde precisao.
@@ -175,6 +186,13 @@ A página do PIX inclui meta tags Open Graph e Twitter Card, então ao
 colar o link no WhatsApp, Telegram, Slack, etc. o preview mostra o QR
 Code (via endpoint `.png`), o valor e a chave.
 
+### Para LLMs e agentes de IA
+
+`https://pix.peleteiro.net/llms.txt` documenta a API de URL no formato
+[llms.txt](https://llmstxt.org) — versao concisa e em ingles otimizada
+pra agentes que precisam construir links pixlink (ex: bots de WhatsApp,
+assistentes financeiros, agentes que ajudam usuarios a cobrar via PIX).
+
 ## Exemplos
 
 | URL                                        | Resultado                              |
@@ -186,6 +204,7 @@ Code (via endpoint `.png`), o valor e a chave.
 | `/123e4567-e89b-12d3-a456-426614174000/50` | QR Code para chave aleatoria, R$ 50,00 |
 | `/joana@example.com/100?d=Consultoria`     | QR Code com descricao                  |
 | `/11912345678/50,00.png`                   | Imagem PNG do QR Code                  |
+| `/11912345678/R$50`                        | Prefixo R$ aceito (= R$ 50,00)         |
 | `/00020126...DA46`                         | Renderiza o payload "copia e cola"     |
 
 ## Estrutura

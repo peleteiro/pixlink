@@ -1,0 +1,126 @@
+# pixlink
+
+> pixlink turns a URL into a Brazilian PIX payment QR code. Given a PIX key (chave) and amount (valor) in the URL path, it renders a page with a scannable QR code, a copy-paste payload, and meta previews — or returns a PNG image directly. The service stores nothing: all payment data lives in the URL itself, so links are shareable, embeddable in spreadsheets, and safe to bookmark.
+
+Base URL: `https://pix.peleteiro.net`
+
+Free, public, no authentication, no rate limit, nothing stored server-side.
+
+## When to use pixlink
+
+Use pixlink when you have a PIX key and want to hand the payer a scannable QR code without sending them through a banking app. Typical scenarios:
+
+- Sharing a payment link in chat (WhatsApp, Telegram, Slack — the URL renders a preview)
+- Embedding a QR code in a spreadsheet via `=IMAGE(...)` (use the `.png` URL)
+- Generating invoices that link to a pre-filled PIX payment
+- Repassing a marketplace payment QR to someone else while keeping the txid intact
+
+pixlink does not process payments. The user's bank app does. pixlink only renders the QR code from data in the URL.
+
+## URL patterns
+
+| Pattern | Purpose |
+|---|---|
+| `/{chave}/{valor}` | Page with QR code, copy button, social preview |
+| `/{chave}/{valor}.png` | Raw 1024×1024 PNG of the QR code |
+| `/{chave}` | Calculator page (form to enter amount) — only when no fixed amount |
+| `/{payload}` | Accepts a full EMV "copia e cola" string; preserves the original payload (txid, merchant name) |
+
+Query param `?d={descricao}` adds an optional payment description, embedded inside the QR code payload. Description is ASCII-only and truncated to 72 chars.
+
+## Chave (PIX key) types
+
+| Type | Examples | URL-encoded form |
+|---|---|---|
+| Phone (BR) | `11912345678`, `5511912345678`, `+5511912345678` | `+` → `%2B` |
+| CPF | `111.444.777-35`, `11144477735` | — |
+| CNPJ | `12.345.678/0001-95`, `12345678000195` | `/` → `%2F` (or use the literal `/` — auto-redirects) |
+| Email | `joana@example.com` | `@` → `%40` |
+| Random (UUID) | `123e4567-e89b-12d3-a456-426614174000` | — |
+
+Phone is the BR phone (+55 DDI assumed). CPF/CNPJ are validated by check digits — invalid documents return HTTP 400. CPF must be 11 digits, CNPJ 14 digits, phone 10-13 digits.
+
+The parser is permissive: punctuation (`.`, `-`, `(`, `)`, spaces, `+`) is stripped before classification. So `11.912.345-678`, `(11) 91234-5678`, `+55 11 91234-5678` all resolve to the same phone.
+
+## Valor (amount) format
+
+In BRL with `,` as the decimal separator. Always positive, less than `Number.MAX_SAFE_INTEGER` cents (~R$ 90 trillion).
+
+| Input | Resolves to |
+|---|---|
+| `50` | R$ 50,00 |
+| `50,00` | R$ 50,00 |
+| `0,50` | R$ 0,50 |
+| `1.000,00` | R$ 1.000,00 (BR thousands separator) |
+| `50.00` | R$ 50,00 (English-style `.` decimals — auto-converted) |
+| `R$50`, `R$ 50`, `$50`, `$ 50` | R$ 50,00 (prefix optional, case-insensitive) |
+| `R$1.000,50` | R$ 1.000,50 |
+
+Invalid: `0`, `-50`, `50abc`, `USD50`, `1e10`, `50.000` (ambiguous middle dot).
+
+## How to construct a pixlink URL (recipe)
+
+Given a PIX key `K` and amount `A`:
+
+1. **Normalize the chave**: if it's a phone, prefer `+5511912345678` form (or just digits, the parser handles both). For UUIDs, lowercase with hyphens.
+2. **URL-encode the chave**: `encodeURIComponent(K)` handles `+`, `@`, `/` correctly.
+3. **Format the valor**: use `{reais},{cents}` with two-digit cents (e.g. `50,00`, not `50`). Skipping cents (`50`) also works.
+4. **Compose**: `https://pix.peleteiro.net/{encodeURIComponent(K)}/{valor}`
+5. **Optional description**: append `?d={encodeURIComponent(descricao)}`
+6. **Want PNG instead?** Append `.png` to the valor (before `?d=` if present).
+
+JavaScript:
+
+```js
+function pixlinkUrl(chave, valorCentavos, descricao) {
+  const reais = Math.floor(valorCentavos / 100);
+  const cents = String(valorCentavos % 100).padStart(2, "0");
+  const path = `/${encodeURIComponent(chave)}/${reais},${cents}`;
+  const query = descricao ? `?d=${encodeURIComponent(descricao)}` : "";
+  return `https://pix.peleteiro.net${path}${query}`;
+}
+
+pixlinkUrl("+5511912345678", 5000);
+// → https://pix.peleteiro.net/%2B5511912345678/50,00
+
+pixlinkUrl("joana@example.com", 10000, "Consultoria");
+// → https://pix.peleteiro.net/joana%40example.com/100,00?d=Consultoria
+```
+
+## Examples
+
+- `https://pix.peleteiro.net/11912345678/50,00` — pay R$ 50,00 to a phone
+- `https://pix.peleteiro.net/111.444.777-35/15` — pay R$ 15,00 to a CPF
+- `https://pix.peleteiro.net/12.345.678%2F0001-95/250,00` — pay R$ 250,00 to a CNPJ
+- `https://pix.peleteiro.net/123e4567-e89b-12d3-a456-426614174000/50` — pay R$ 50,00 to a UUID
+- `https://pix.peleteiro.net/joana@example.com/100?d=Consultoria` — with description
+- `https://pix.peleteiro.net/11912345678/R$50` — `R$` prefix accepted
+- `https://pix.peleteiro.net/11912345678/50,00.png` — raw PNG
+- `https://pix.peleteiro.net/00020126540014br.gov.bcb.pix...DA46` — copia e cola payload
+
+## PIX copia e cola (advanced)
+
+If you already have a full EMV "copia e cola" payload (e.g. from a marketplace like Mercado Pago), paste it as a single path segment:
+
+```
+https://pix.peleteiro.net/{payload-emv-completo}
+```
+
+This preserves the original payload byte-for-byte in both the rendered QR and the copy button — including the **txid** (field 62.05), merchant name, and merchant city. The shorter `/{chave}/{valor}` form regenerates the payload from scratch and loses these fields, which breaks reconciliation in marketplace flows. **Rule of thumb:** if the payment is tied to a specific order/transaction (has a meaningful txid), always use the full payload URL.
+
+Payloads without an amount (`valor a definir`) render as a QR with "Valor a definir no app" — the payer enters the amount in their banking app. pixlink never redirects payload URLs to the calculator (which would lose the txid).
+
+## Privacy and storage
+
+- Nothing is stored server-side. All payment data is in the URL.
+- The QR code is generated at request time from URL data.
+- robots.txt blocks crawler indexing of payment URLs — only the homepage is indexable.
+- Pages served from full payload URLs (those with a txid) omit `<link rel="canonical">` so crawlers don't dedupe them with the lossy short form.
+
+## Constraints
+
+- Phone numbers must be Brazilian (`+55` DDI). Non-BR phones won't validate.
+- CPF/CNPJ check digits are validated — fake numbers return 400.
+- Descriptions are sanitized to ASCII (accents stripped, emojis removed) and truncated to 72 chars — required by the EMV spec; non-conforming descriptions may cause silent rejection by banks.
+- Amounts above ~R$ 90 trillion (`Number.MAX_SAFE_INTEGER` cents) return 400.
+- Source: <https://github.com/peleteiro/pixlink>
