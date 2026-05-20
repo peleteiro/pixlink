@@ -32,14 +32,30 @@ const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
  * (14 dígitos) ou telefone BR (10-13 dígitos, com ou sem DDI 55).
  */
 export function parsearChave(raw: string): ChavePix | undefined {
+  // Aceita entrada URL-encoded — Astro nao decodifica %XX em Astro.params,
+  // entao a forma canonica /%2B5511912345678/... ou um e-mail com %40 chegam
+  // aqui escapados. decodeURIComponent pode lancar URIError em sequencias
+  // malformadas; nesses casos seguimos com a string original.
+  let entrada = raw;
+  try {
+    entrada = decodeURIComponent(raw);
+  } catch {
+    entrada = raw;
+  }
+
   // E-mail
-  if (raw.includes("@")) {
-    if (!EMAIL_REGEX.test(raw)) return undefined;
-    return { tipo: "email", chave: raw, display: raw, label: "E-mail" };
+  if (entrada.includes("@")) {
+    if (!EMAIL_REGEX.test(entrada)) return undefined;
+    return {
+      tipo: "email",
+      chave: entrada,
+      display: entrada,
+      label: "E-mail",
+    };
   }
 
   // Chave aleatória — normaliza para lowercase com hifens
-  const normalizada = raw.trim().toLowerCase();
+  const normalizada = entrada.trim().toLowerCase();
   if (UUID_REGEX.test(normalizada)) {
     return {
       tipo: "aleatoria",
@@ -59,7 +75,7 @@ export function parsearChave(raw: string): ChavePix | undefined {
     };
   }
 
-  const digits = raw.replace(/\D/g, "");
+  const digits = entrada.replace(/\D/g, "");
   if (!digits) return undefined;
 
   // CPF — 11 dígitos validados

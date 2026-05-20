@@ -1,13 +1,50 @@
 ---
 import ErrorPage from "@/components/ErrorPage.astro";
 import PixCalculator from "@/components/PixCalculator";
+import PixPage from "@/components/PixPage.astro";
 import Base from "@/layouts/Base.astro";
-import { parsearChave } from "@/lib/pix";
+import {
+  montarDadosPix,
+  parsearChave,
+  parsearPayloadPix,
+  type DadosPix,
+} from "@/lib/pix";
 
 const { chave: chaveRaw } = Astro.params;
-const parsed = chaveRaw ? parsearChave(chaveRaw) : undefined;
 
-if (!parsed) {
+// "PIX copia e cola": se o segmento e o payload EMV inteiro, renderiza o
+// QR Code do PROPRIO payload — preservando txid/merchant name/city que
+// marketplaces (Mercado Pago etc.) usam pra reconciliar. Sem valor (campo
+// 54 ausente, "valor a definir"), cai pra calculadora na forma canonica.
+let dadosPayload: DadosPix | undefined;
+let descricaoPayload: string | undefined;
+if (chaveRaw) {
+  const payload = parsearPayloadPix(chaveRaw);
+  if (payload) {
+    if (payload.valorCentavos === undefined) {
+      const chaveEnc = encodeURIComponent(payload.chave);
+      const desc = payload.descricao
+        ? `?d=${encodeURIComponent(payload.descricao)}`
+        : "";
+      return Astro.redirect(`/${chaveEnc}${desc}`, 301);
+    }
+    const parsedChave = parsearChave(payload.chave);
+    if (parsedChave) {
+      dadosPayload = montarDadosPix(
+        parsedChave,
+        payload.valorCentavos,
+        Astro.url.origin,
+        payload.descricao,
+        chaveRaw,
+      );
+      descricaoPayload = payload.descricao;
+    }
+  }
+}
+
+const parsed = !dadosPayload && chaveRaw ? parsearChave(chaveRaw) : undefined;
+
+if (!dadosPayload && !parsed) {
   Astro.response.status = 400;
 }
 
@@ -17,7 +54,9 @@ const canonical = parsed
 ---
 
 {
-  !parsed ? (
+  dadosPayload ? (
+    <PixPage dados={dadosPayload} descricao={descricaoPayload} />
+  ) : !parsed ? (
     <Base
       titulo="Chave invalida — pixlink"
       descricao="A chave PIX informada na URL nao e valida."

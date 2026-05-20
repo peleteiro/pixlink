@@ -7,6 +7,7 @@ import {
   parseValorForm,
   parseValorUrl,
   parsearChave,
+  parsearPayloadPix,
   sanitizarDescricao,
 } from "@/lib/pix";
 
@@ -157,6 +158,34 @@ describe("parsearChave", () => {
 
     it("retorna undefined para digitos de tamanho nao reconhecido", () => {
       expect(parsearChave("123")).toBeUndefined();
+    });
+  });
+
+  describe("url-encoded", () => {
+    // Astro nao decodifica %XX automaticamente em Astro.params, entao a
+    // forma canonica /%2B5511912345678/... e e-mails com %40 precisam ser
+    // aceitos diretamente pelo parser.
+    it("decodifica %40 em e-mail", () => {
+      const r = parsearChave("pix_marketplace%40mercadolibre.com");
+      expect(r?.tipo).toBe("email");
+      expect(r?.chave).toBe("pix_marketplace@mercadolibre.com");
+    });
+
+    it("decodifica %2B em telefone (forma canonica)", () => {
+      const r = parsearChave("%2B5511912345678");
+      expect(r?.tipo).toBe("telefone");
+      expect(r?.chave).toBe("+5511912345678");
+    });
+
+    it("decodifica %2F em CNPJ (caso o usuario escape manualmente)", () => {
+      const r = parsearChave("12.345.678%2F0001-95");
+      expect(r?.tipo).toBe("cnpj");
+      expect(r?.chave).toBe("12345678000195");
+    });
+
+    it("nao quebra com sequencia %XX malformada — usa string original", () => {
+      // "%" sem dois hex em seguida lanca URIError; o parser segue.
+      expect(parsearChave("100%abc")).toBeUndefined();
     });
   });
 });
@@ -340,6 +369,74 @@ describe("gerarPayloadPix", () => {
   });
 });
 
+describe("parsearPayloadPix", () => {
+  it("parseia payload gerado pelo gerarPayloadPix (round trip)", () => {
+    const payload = gerarPayloadPix("+5511912345678", 5000);
+    expect(parsearPayloadPix(payload)).toEqual({
+      chave: "+5511912345678",
+      valorCentavos: 5000,
+      descricao: undefined,
+    });
+  });
+
+  it("extrai descricao quando presente", () => {
+    const payload = gerarPayloadPix("+5511912345678", 5000, "Almoco");
+    expect(parsearPayloadPix(payload)).toEqual({
+      chave: "+5511912345678",
+      valorCentavos: 5000,
+      descricao: "Almoco",
+    });
+  });
+
+  it("aceita CPF, CNPJ, e-mail e UUID", () => {
+    expect(parsearPayloadPix(gerarPayloadPix("11144477735", 1500))?.chave).toBe(
+      "11144477735",
+    );
+    expect(
+      parsearPayloadPix(gerarPayloadPix("12345678000195", 25000))?.chave,
+    ).toBe("12345678000195");
+    expect(
+      parsearPayloadPix(gerarPayloadPix("joana@example.com", 100))?.chave,
+    ).toBe("joana@example.com");
+    expect(
+      parsearPayloadPix(
+        gerarPayloadPix("123e4567-e89b-12d3-a456-426614174000", 50),
+      )?.chave,
+    ).toBe("123e4567-e89b-12d3-a456-426614174000");
+  });
+
+  it("preserva centavos com precisao em valores delicados", () => {
+    expect(
+      parsearPayloadPix(gerarPayloadPix("11144477735", 1))?.valorCentavos,
+    ).toBe(1);
+    expect(
+      parsearPayloadPix(gerarPayloadPix("11144477735", 50))?.valorCentavos,
+    ).toBe(50);
+    expect(
+      parsearPayloadPix(gerarPayloadPix("11144477735", 5050))?.valorCentavos,
+    ).toBe(5050);
+  });
+
+  it("rejeita payload com CRC adulterado", () => {
+    const payload = gerarPayloadPix("+5511912345678", 5000);
+    expect(parsearPayloadPix(payload.slice(0, -4) + "0000")).toBeUndefined();
+  });
+
+  it("rejeita payload com byte modificado no meio (CRC nao bate)", () => {
+    const payload = gerarPayloadPix("+5511912345678", 5000);
+    // Troca o valor de 50.00 pra 90.00 sem recalcular o CRC.
+    const adulterado = payload.replace("540550.00", "540590.00");
+    expect(parsearPayloadPix(adulterado)).toBeUndefined();
+  });
+
+  it("rejeita strings que nao sao payload PIX", () => {
+    expect(parsearPayloadPix("")).toBeUndefined();
+    expect(parsearPayloadPix("11912345678")).toBeUndefined();
+    expect(parsearPayloadPix("joana@example.com")).toBeUndefined();
+    expect(parsearPayloadPix("foo bar baz")).toBeUndefined();
+  });
+});
+
 describe("sanitizarDescricao", () => {
   it("remove diacriticos mantendo letras base", () => {
     expect(sanitizarDescricao("café")).toBe("cafe");
@@ -414,6 +511,28 @@ describe("montarDadosPix", () => {
       "Almoco",
     );
     expect(dados.payload).toContain("0206Almoco");
+  });
+
+  it("preserva o payload original quando fornecido (PIX copia e cola)", () => {
+    // Caso marketplace: o payload colado tem txid e merchant name proprios
+    // que o gerarPayloadPix nao reproduz. Quando passamos o payload
+    // original, ele e usado verbatim no QR e no botao copiar.
+    const original =
+      "00020126540014br.gov.bcb.pix0132pix_marketplace@mercadolibre.com5204000053039865406792.695802BR5911@34117387556009Sao Paulo62250521mpqrinter1592000744436304DA46";
+    const email = parsearChave("pix_marketplace@mercadolibre.com")!;
+    const dados = montarDadosPix(
+      email,
+      79269,
+      "https://pix.peleteiro.net",
+      undefined,
+      original,
+    );
+    expect(dados.payload).toBe(original);
+    // O txid do marketplace tem que aparecer no payload final.
+    expect(dados.payload).toContain("mpqrinter159200074443");
+    // E no SVG do QR (qrcode-svg embute o texto literal nos pixels —
+    // checar a presenca no SVG comprova que o QR carrega o payload exato).
+    expect(dados.svg).toContain("<svg");
   });
 
   it("funciona com chaves de outros tipos", () => {

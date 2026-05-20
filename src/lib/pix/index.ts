@@ -47,8 +47,14 @@ export function montarDadosPix(
   centavos: number,
   origin: string,
   descricao?: string,
+  payloadOriginal?: string,
 ): DadosPix {
-  const payload = gerarPayloadPix(parsed.chave, centavos, descricao);
+  // Quando o pagador colou um "PIX copia e cola", preserva o payload inteiro
+  // no QR Code e no botao copiar. O gerarPayloadPix nao reproduz txid,
+  // merchant name e city — campos que marketplaces (Mercado Pago etc.) usam
+  // pra reconciliar o pagamento com o pedido especifico.
+  const payload =
+    payloadOriginal ?? gerarPayloadPix(parsed.chave, centavos, descricao);
   const svg = gerarSvg(payload);
   const valorFormatado = formatValor(centavos);
 
